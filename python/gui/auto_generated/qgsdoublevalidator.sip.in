@@ -97,6 +97,12 @@ It uses locale interpretation first
 and C locale interpretation as fallback
 %End
 
+    static bool isDoubleConversionSafe( const QString &input );
+%Docstring
+Checks if ``input`` string can be safely converted to double
+and back to string without any changes.
+%End
+
     void setBottom( double bottom );
 %Docstring
 Set top range limit
