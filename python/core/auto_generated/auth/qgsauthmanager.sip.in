@@ -84,6 +84,7 @@ The standard authentication database file in ~/.qgis3/ or defined location
 .. seealso:: :py:func:`QgsApplication.qgisAuthDatabaseFilePath`
 %End
 
+
     bool setMasterPassword( bool verify = false );
 %Docstring
 Main call to initially set or continually check master password is set

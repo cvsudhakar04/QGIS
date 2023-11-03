@@ -112,6 +112,15 @@ class CORE_EXPORT QgsAuthManager : public QObject
     const QString authenticationDatabasePath() const { return mAuthDbPath; }
 
     /**
+     * Creates a new securely seeded random password and stores it in the
+     * system keychain as the new master password.
+     *
+     * \note Not available in Python bindings
+     * \since QGIS 3.36
+     */
+    bool createAndStoreRandomMasterPasswordInKeyChain() SIP_SKIP;
+
+    /**
      * Main call to initially set or continually check master password is set
      * \note If it is not set, the user is asked for its input
      * \param verify Whether password's hash was saved in authentication database
@@ -825,6 +834,8 @@ class CORE_EXPORT QgsAuthManager : public QObject
     bool createConfigTables();
 
     bool createCertTables();
+
+    static QString generatePassword();
 
     bool masterPasswordInput();
 

@@ -35,6 +35,7 @@
 #include <QDomElement>
 #include <QDomDocument>
 #include <QRegularExpression>
+#include <QRandomGenerator>
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
 #include <QRandomGenerator>
@@ -480,6 +481,19 @@ bool QgsAuthManager::createCertTables()
   return true;
 }
 
+QString QgsAuthManager::generatePassword()
+{
+  QRandomGenerator generator = QRandomGenerator::securelySeeded();
+  QString pw;
+  pw.resize( 32 );
+  static const QString sPwChars = QStringLiteral( "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_-{}[]" );
+  for ( int i = 0; i < pw.size(); ++i )
+  {
+    pw[i] = sPwChars.at( generator.bounded( 0, sPwChars.length() ) );
+  }
+  return pw;
+}
+
 bool QgsAuthManager::isDisabled() const
 {
   if ( mAuthDisabled )
@@ -492,6 +506,43 @@ bool QgsAuthManager::isDisabled() const
 const QString QgsAuthManager::disabledMessage() const
 {
   return tr( "Authentication system is DISABLED:\n%1" ).arg( mAuthDisabledMessage );
+}
+
+bool QgsAuthManager::createAndStoreRandomMasterPasswordInKeyChain()
+{
+  QMutexLocker locker( mMasterPasswordMutex.get() );
+  if ( isDisabled() )
+    return false;
+
+  if ( mScheduledDbErase )
+    return false;
+
+  if ( !passwordHelperEnabled() )
+    return false;
+
+  if ( !mMasterPass.isEmpty() )
+  {
+    QgsDebugError( QStringLiteral( "Master password is already set!" ) );
+    return false;
+  }
+
+  const QString newPassword = generatePassword();
+  if ( passwordHelperWrite( newPassword ) )
+  {
+    emit passwordHelperMessageOut( tr( "Master password has been successfully written to your %1" ).arg( AUTH_PASSWORD_HELPER_DISPLAY_NAME ), authManTag(), INFO );
+    mMasterPass = newPassword;
+  }
+  else
+  {
+    emit passwordHelperMessageOut( tr( "Master password could not be written to your %1" ).arg( AUTH_PASSWORD_HELPER_DISPLAY_NAME ), authManTag(), WARNING );
+    return false;
+  }
+
+  if ( !verifyMasterPassword() )
+    return false;
+
+  QgsDebugMsgLevel( QStringLiteral( "Master password is set and verified" ), 2 );
+  return true;
 }
 
 bool QgsAuthManager::setMasterPassword( bool verify )
