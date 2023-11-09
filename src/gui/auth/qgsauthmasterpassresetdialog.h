@@ -42,6 +42,15 @@ class GUI_EXPORT QgsMasterPasswordResetDialog : public QDialog, private Ui::QgsM
   public:
     explicit QgsMasterPasswordResetDialog( QWidget *parent = nullptr );
 
+    /**
+     * Use an dummy password for the "old" password option, and disable user entry
+     * of old password.
+     *
+     * This can be used when the old password is not required by the user (i.e. it
+     * will be retrieved from the system password helper).
+     */
+    void useDummyOldPassword();
+
     bool requestMasterPasswordReset( QString *newpass, QString *oldpass, bool *keepbackup );
 
   private slots:

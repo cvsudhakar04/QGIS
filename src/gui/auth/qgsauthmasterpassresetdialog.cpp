@@ -43,6 +43,12 @@ QgsMasterPasswordResetDialog::QgsMasterPasswordResetDialog( QWidget *parent )
   }
 }
 
+void QgsMasterPasswordResetDialog::useDummyOldPassword()
+{
+  leMasterPassCurrent->setText( QStringLiteral( "***************" ) );
+  leMasterPassCurrent->setEnabled( false );
+}
+
 bool QgsMasterPasswordResetDialog::requestMasterPasswordReset( QString *newpass, QString *oldpass, bool *keepbackup )
 {
   if ( !QgsApplication::authManager()->isDisabled() )
@@ -81,9 +87,17 @@ void QgsMasterPasswordResetDialog::leMasterPassNew_textChanged( const QString &p
 
 void QgsMasterPasswordResetDialog::validatePasswords()
 {
-  const QString ss1 = mPassCurOk ? QgsAuthGuiUtils::greenTextStyleSheet( QStringLiteral( "QLineEdit" ) )
-                      : QgsAuthGuiUtils::redTextStyleSheet( QStringLiteral( "QLineEdit" ) );
-  leMasterPassCurrent->setStyleSheet( ss1 );
+  if ( leMasterPassCurrent->isEnabled() )
+  {
+    const QString ss1 = mPassCurOk ? QgsAuthGuiUtils::greenTextStyleSheet( QStringLiteral( "QLineEdit" ) )
+                        : QgsAuthGuiUtils::redTextStyleSheet( QStringLiteral( "QLineEdit" ) );
+    leMasterPassCurrent->setStyleSheet( ss1 );
+  }
+  else
+  {
+    leMasterPassCurrent->setStyleSheet( QString() );
+  }
+
   const QString ss2 = mPassNewOk ? QgsAuthGuiUtils::greenTextStyleSheet( QStringLiteral( "QLineEdit" ) )
                       : QgsAuthGuiUtils::redTextStyleSheet( QStringLiteral( "QLineEdit" ) );
   leMasterPassNew->setStyleSheet( ss2 );
