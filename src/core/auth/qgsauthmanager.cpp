@@ -758,6 +758,14 @@ bool QgsAuthManager::resetMasterPassword( const QString &newpass, const QString 
     emit messageOut( tr( err ), authManTag(), WARNING );
   }
 
+  if ( passwordHelperEnabled() && !passwordHelperSync() )
+  {
+    ok = false;
+    const QString err = tr( "Master password reset FAILED: could not sync password helper: %1" ).arg( QgsApplication::authManager()->passwordHelperErrorMessage() );
+    QgsDebugError( err );
+    emit messageOut( err, authManTag(), WARNING );
+  }
+
   // something went wrong, reinstate previous password and database
   if ( !ok )
   {
@@ -780,7 +788,6 @@ bool QgsAuthManager::resetMasterPassword( const QString &newpass, const QString 
 
     return false;
   }
-
 
   if ( !keepbackup && !QFile::remove( dbbackup ) )
   {
