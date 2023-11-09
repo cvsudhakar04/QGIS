@@ -3070,6 +3070,19 @@ bool QgsAuthManager::passwordHelperSync()
   return false;
 }
 
+bool QgsAuthManager::verifyStoredPasswordHelperPassword()
+{
+  if ( !passwordHelperEnabled() )
+    return false;
+
+  const QString currentPass = passwordHelperRead();
+  if ( !currentPass.isEmpty() && ( mPasswordHelperErrorCode == QKeychain::NoError ) )
+  {
+    return verifyMasterPassword( currentPass );
+  }
+  return false;
+}
+
 
 ////////////////// Certificate calls - end ///////////////////////
 

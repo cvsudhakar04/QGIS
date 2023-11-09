@@ -153,7 +153,7 @@ class CORE_EXPORT QgsAuthManager : public QObject
 
     /**
      * Reset the master password to a new one, then re-encrypt all previous
-     * configs in a new database file, optionally backup curren database
+     * configs in a new database file, optionally backup current database
      * \param newpass New master password to replace existing
      * \param oldpass Current master password to replace existing
      * \param keepbackup Whether to keep the generated backup of current database
@@ -703,6 +703,15 @@ class CORE_EXPORT QgsAuthManager : public QObject
      * \note Available in Python bindings since QGIS 3.8.0
      */
     bool passwordHelperSync();
+
+    /**
+     * Verify the password stored in the password helper.
+     *
+     *
+     * \note Not available in Python bindings
+     * \since QGIS 3.36
+     */
+    bool verifyStoredPasswordHelperPassword() SIP_SKIP;
 
     //! The display name of the password helper (platform dependent)
     static const QString AUTH_PASSWORD_HELPER_DISPLAY_NAME;
