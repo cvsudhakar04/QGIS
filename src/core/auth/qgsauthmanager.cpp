@@ -62,6 +62,8 @@
 #include "qgsmessagelog.h"
 #include "qgssettings.h"
 #include "qgsruntimeprofiler.h"
+#include "qgssettingsentryimpl.h"
+#include "qgssettingstree.h"
 
 QgsAuthManager *QgsAuthManager::sInstance = nullptr;
 
@@ -79,7 +81,7 @@ const QString QgsAuthManager::AUTH_CFG_REGEX = QStringLiteral( "authcfg=([a-z]|[
 const QLatin1String QgsAuthManager::AUTH_PASSWORD_HELPER_KEY_NAME( "QGIS-Master-Password" );
 const QLatin1String QgsAuthManager::AUTH_PASSWORD_HELPER_FOLDER_NAME( "QGIS" );
 
-
+const QgsSettingsEntryBool *QgsAuthManager::settingsGenerateRandomPasswordForPasswordHelper = new QgsSettingsEntryBool( QStringLiteral( "generate-random-password-for-keychain" ), QgsSettingsTree::sTreeAuthentication, true, QStringLiteral( "Whether a random password should be automatically generated for the authentication database and stored in the system keychain." ) );
 
 #if defined(Q_OS_MAC)
 const QString QgsAuthManager::AUTH_PASSWORD_HELPER_DISPLAY_NAME( "Keychain" );
