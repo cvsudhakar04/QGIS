@@ -25,7 +25,7 @@
 #include "qgsmessageviewer.h"
 #include "qgsvectorlayer.h"
 
-bool QgsGuiVectorLayerTools::addFeature( QgsVectorLayer *layer, const QgsAttributeMap &defaultValues, const QgsGeometry &defaultGeometry, QgsFeature *feat, QWidget *parentWidget, bool showModal, bool hideParent ) const
+bool QgsGuiVectorLayerTools::addFeature( QgsVectorLayer *layer, const QgsAttributeMap &defaultValues, const QgsGeometry &defaultGeometry, QgsFeature *feat, QWidget *parentWidget, bool showModal, bool hideParent, QgsExpressionContextScope *scope ) const
 {
   QgsFeature *f = feat;
   if ( !feat )
@@ -35,7 +35,7 @@ bool QgsGuiVectorLayerTools::addFeature( QgsVectorLayer *layer, const QgsAttribu
   QgsFeatureAction *a = new QgsFeatureAction( tr( "Add feature" ), *f, layer, QUuid(), -1, parentWidget );
   a->setForceSuppressFormPopup( forceSuppressFormPopup() );
   connect( a, &QgsFeatureAction::addFeatureFinished, a, &QObject::deleteLater );
-  const QgsFeatureAction::AddFeatureResult result = a->addFeature( defaultValues, showModal, nullptr, hideParent );
+  const QgsFeatureAction::AddFeatureResult result = a->addFeature( defaultValues, showModal, std::unique_ptr<QgsExpressionContextScope>( scope ), hideParent );
   if ( !feat )
     delete f;
 
