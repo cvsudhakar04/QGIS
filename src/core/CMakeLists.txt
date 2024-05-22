@@ -952,6 +952,7 @@ set(QGIS_CORE_SRCS
   vector/qgsvectorlayerselectionproperties.cpp
   vector/qgsvectorlayertemporalproperties.cpp
   vector/qgsvectorlayertools.cpp
+  vector/qgsvectorlayertoolscontext.cpp
   vector/qgsvectorlayerundocommand.cpp
   vector/qgsvectorlayerundopassthroughcommand.cpp
   vector/qgsvectorlayerutils.cpp
@@ -2023,6 +2024,7 @@ set(QGIS_CORE_HDRS
   vector/qgsvectorlayerselectionproperties.h
   vector/qgsvectorlayertemporalproperties.h
   vector/qgsvectorlayertools.h
+  vector/qgsvectorlayertoolscontext.h
   vector/qgsvectorlayerundocommand.h
   vector/qgsvectorlayerundopassthroughcommand.h
   vector/qgsvectorlayerutils.h

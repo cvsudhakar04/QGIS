@@ -44,11 +44,11 @@ class CORE_EXPORT QgsTrackedVectorLayerTools : public QgsVectorLayerTools
      * \param parentWidget    The widget calling this function to be passed to the used dialog
      * \param showModal       If the used dialog should be modal or not
      * \param hideParent      If the parent widget should be hidden, when the used dialog is opened
-     * \param scope           A  context scope to be used to calculate feature expression-based values
+     * \param context         A context object to be used for e.g. to calculate feature expression-based values (since QGIS 3.38)
      *
      * \returns               TRUE in case of success, FALSE if the operation failed/was aborted
      */
-    bool addFeature( QgsVectorLayer *layer, const QgsAttributeMap &defaultValues, const QgsGeometry &defaultGeometry, QgsFeature *feature, QWidget *parentWidget = nullptr, bool showModal = true, bool hideParent = false, QgsExpressionContextScope *scope = nullptr ) const override;
+    bool addFeatureV2( QgsVectorLayer *layer, const QgsAttributeMap &defaultValues, const QgsGeometry &defaultGeometry, QgsFeature *feature, QWidget *parentWidget = nullptr, bool showModal = true, bool hideParent = false, QgsVectorLayerToolsContext *context  = nullptr ) const override;
     bool startEditing( QgsVectorLayer *layer ) const override;
     bool stopEditing( QgsVectorLayer *layer, bool allowCancel ) const override;
     bool saveEdits( QgsVectorLayer *layer ) const override;

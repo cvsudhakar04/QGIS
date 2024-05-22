@@ -31,6 +31,7 @@
 #include "qgsgui.h"
 #include "qgsmapcanvas.h"
 #include "qgsvectorlayertools.h"
+#include "qgsvectorlayertoolscontext.h"
 #include "qgsadvanceddigitizingdockwidget.h"
 #include "qgsmaptooldigitizefeature.h"
 
@@ -582,12 +583,12 @@ void TestQgsRelationReferenceWidget::testIdentifyOnMap()
 // referenced layer
 class DummyVectorLayerTools : public QgsVectorLayerTools // clazy:exclude=missing-qobject-macro
 {
-    bool addFeature( QgsVectorLayer *layer, const QgsAttributeMap &, const QgsGeometry &, QgsFeature *feat = nullptr, QWidget *parentWidget = nullptr, bool showModal = true, bool hideParent = false, QgsExpressionContextScope *scope = nullptr ) const override
+    bool addFeatureV2( QgsVectorLayer *layer, const QgsAttributeMap &, const QgsGeometry &, QgsFeature *feat = nullptr, QWidget *parentWidget = nullptr, bool showModal = true, bool hideParent = false, QgsVectorLayerToolsContext *context = nullptr ) const override
     {
       Q_UNUSED( parentWidget );
       Q_UNUSED( showModal );
       Q_UNUSED( hideParent );
-      Q_UNUSED( scope );
+      Q_UNUSED( context );
       feat->setAttribute( QStringLiteral( "pk" ), 13 );
       feat->setAttribute( QStringLiteral( "material" ), QStringLiteral( "steel" ) );
       feat->setAttribute( QStringLiteral( "diameter" ), 140 );
