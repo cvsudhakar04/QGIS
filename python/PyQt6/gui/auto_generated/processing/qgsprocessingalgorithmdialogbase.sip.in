@@ -20,8 +20,6 @@ Base class for processing algorithm dialogs.
 .. note::
 
    This is not considered stable API and may change in future QGIS versions.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -29,7 +27,7 @@ Base class for processing algorithm dialogs.
 %End
   public:
 
-    enum LogFormat
+    enum LogFormat /BaseType=IntEnum/
     {
       FormatPlainText,
       FormatHtml,
@@ -91,7 +89,7 @@ Returns ``True`` if an algorithm was executed in the dialog.
 .. seealso:: :py:func:`setExecuted`
 %End
 
-    QMap<QString, QVariant> results() const;
+    QVariantMap results() const;
 %Docstring
 Returns the results returned by the algorithm executed.
 
@@ -134,7 +132,7 @@ Sets the logging ``level`` to use when running algorithms from the dialog.
 .. versionadded:: 3.20
 %End
 
-    virtual void setParameters( const QMap<QString, QVariant> &values );
+    virtual void setParameters( const QVariantMap &values );
 %Docstring
 Sets the parameter ``values`` to show in the dialog.
 
@@ -280,7 +278,7 @@ Sets whether the algorithm was executed through the dialog.
 Sets whether the algorithm was executed through the dialog (no matter the result).
 %End
 
-    void setResults( const QMap<QString, QVariant> &results );
+    void setResults( const QVariantMap &results );
 %Docstring
 Sets the algorithm results.
 
@@ -341,8 +339,6 @@ by the dialog. Ownership of ``task`` is transferred to the dialog.
     static QString formatStringForLog( const QString &string );
 %Docstring
 Formats an input ``string`` for display in the log tab.
-
-.. versionadded:: 3.0.1
 %End
 
     virtual bool isFinalized();
@@ -363,7 +359,16 @@ This allows the dialog to override default Processing settings for an individual
 
   signals:
 
-    void algorithmFinished( bool successful, const QMap<QString, QVariant> &result );
+    void algorithmAboutToRun( QgsProcessingContext *context );
+%Docstring
+Emitted when the algorithm is about to run in the specified ``context``.
+
+This signal can be used to tweak the ``context`` prior to the algorithm execution.
+
+.. versionadded:: 3.38
+%End
+
+    void algorithmFinished( bool successful, const QVariantMap &result );
 %Docstring
 Emitted whenever an algorithm has finished executing in the dialog.
 
@@ -372,7 +377,7 @@ Emitted whenever an algorithm has finished executing in the dialog.
 
   protected slots:
 
-    virtual void finished( bool successful, const QMap<QString, QVariant> &result, QgsProcessingContext &context, QgsProcessingFeedback *feedback );
+    virtual void finished( bool successful, const QVariantMap &result, QgsProcessingContext &context, QgsProcessingFeedback *feedback );
 %Docstring
 Called when the algorithm has finished executing.
 %End
@@ -382,7 +387,7 @@ Called when the algorithm has finished executing.
 Called when the dialog's algorithm should be run. Must be overridden by subclasses.
 %End
 
-    virtual void algExecuted( bool successful, const QMap<QString, QVariant> &results );
+    virtual void algExecuted( bool successful, const QVariantMap &results );
 %Docstring
 Called when an algorithm task has completed.
 

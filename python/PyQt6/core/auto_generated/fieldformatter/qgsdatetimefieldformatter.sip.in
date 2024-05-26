@@ -14,8 +14,6 @@ Field formatter for a date time field.
 
 This represents a date, time or datetime value based on
 the field configuration.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -38,7 +36,7 @@ Default constructor of field formatter for a date time field.
     virtual QString id() const;
 
 
-    virtual QString representValue( QgsVectorLayer *layer, int fieldIndex, const QMap<QString, QVariant> &config, const QVariant &cache, const QVariant &value ) const;
+    virtual QString representValue( QgsVectorLayer *layer, int fieldIndex, const QVariantMap &config, const QVariant &cache, const QVariant &value ) const;
 
 
     static QString defaultFormat( QVariant::Type type );

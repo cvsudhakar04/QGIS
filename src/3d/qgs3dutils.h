@@ -36,7 +36,7 @@ namespace Qt3DExtras
 #include "qgs3dtypes.h"
 #include "qgsaabb.h"
 #include "qgsray3d.h"
-#include "qgsraycastingutils_p.h"
+#include "qgsraycastingutils.h"
 
 #include <QSize>
 #include <Qt3DRender/QCamera>
@@ -51,7 +51,6 @@ namespace Qt3DExtras
  * \ingroup 3d
  * \brief Miscellaneous utility functions used from 3D code.
  * \note Not available in Python bindings
- * \since QGIS 3.0
  */
 class _3D_EXPORT Qgs3DUtils
 {

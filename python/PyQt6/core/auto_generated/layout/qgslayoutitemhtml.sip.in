@@ -13,8 +13,6 @@ class QgsLayoutItemHtml: QgsLayoutMultiFrame
 {
 %Docstring(signature="appended")
 A layout multiframe subclass for HTML content.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -22,7 +20,7 @@ A layout multiframe subclass for HTML content.
 %End
   public:
 
-    enum ContentMode
+    enum ContentMode /BaseType=IntEnum/
     {
       Url,
       ManualHtml

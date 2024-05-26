@@ -39,6 +39,7 @@
 #include "qgsmessageoutput.h"
 #include "qgsmessagelog.h"
 #include "qgsnetworkaccessmanager.h"
+#include "qgssetrequestinitiator_p.h"
 #include "qgsnetworkreplyparser.h"
 #include "qgstilecache.h"
 #include "qgsgdalutils.h"
@@ -1295,6 +1296,11 @@ QUrl QgsWmsProvider::createRequestUrlWMS( const QgsRectangle &viewExtent, int pi
   if ( !opacityList.isEmpty() )
   {
     setQueryItem( query, QStringLiteral( "OPACITIES" ), mSettings.mOpacities.join( ',' ) );
+  }
+
+  if ( !mSettings.mFilter.isEmpty() )
+  {
+    setQueryItem( query, QStringLiteral( "FILTER" ), mSettings.mFilter );
   }
 
   // For WMS-T layers
@@ -4285,7 +4291,7 @@ QUrl QgsWmsProvider::getLegendGraphicFullURL( double scale, const QgsRectangle &
 
 QImage QgsWmsProvider::getLegendGraphic( double scale, bool forceRefresh, const QgsRectangle *visibleExtent )
 {
-  // TODO manage return basing of getCapablity => avoid call if service is not available
+  // TODO manage return basing of getCapability => avoid call if service is not available
   // some services doesn't expose getLegendGraphic in capabilities but adding LegendURL in
   // the layer tags inside capabilities
 
@@ -5236,6 +5242,8 @@ QVariantMap QgsWmsProviderMetadata::decodeUri( const QString &uri ) const
       if ( url.isLocalFile() )
       {
         decoded[ QStringLiteral( "path" ) ] = url.toLocalFile();
+        // Also add the url to insure WMS source widget works properly with XYZ file:// URLs
+        decoded[ item.first ] = item.second;
       }
       else if ( QFileInfo( item.second ).isFile() )
       {
@@ -5277,6 +5285,13 @@ QString QgsWmsProviderMetadata::encodeUri( const QVariantMap &parts ) const
     if ( it.key() == QLatin1String( "path" ) )
     {
       items.push_back( { QStringLiteral( "url" ), QUrl::fromLocalFile( it.value().toString() ).toString() } );
+    }
+    else if ( it.key() == QLatin1String( "url" ) )
+    {
+      if ( !parts.contains( QLatin1String( "path" ) ) )
+      {
+        items.push_back( { it.key(), it.value().toString() } );
+      }
     }
     else
     {
@@ -5376,6 +5391,20 @@ QList<QgsProviderSublayerDetails> QgsWmsProviderMetadata::querySublayers( const 
       }
     }
   }
+  else
+  {
+    const thread_local QRegularExpression re( QStringLiteral( "{-?[xyzq]}" ) );
+    if ( fileName.contains( re ) )
+    {
+      // local XYZ directory
+      QgsProviderSublayerDetails details;
+      details.setUri( uri );
+      details.setProviderKey( key() );
+      details.setType( Qgis::LayerType::Raster );
+      return {details};
+    }
+  }
+
   return {};
 }
 

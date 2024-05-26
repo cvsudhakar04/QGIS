@@ -41,7 +41,10 @@ QgsLayerTreeModel::QgsLayerTreeModel( QgsLayerTree *rootNode, QObject *parent )
   , mRootNode( rootNode )
   , mFlags( ShowLegend | AllowLegendChangeState | DeferredLegendInvalidation )
 {
-  connectToRootNode();
+  if ( rootNode )
+  {
+    connectToRootNode();
+  }
 
   mFontLayer.setBold( true );
 
@@ -274,10 +277,10 @@ QVariant QgsLayerTreeModel::data( const QModelIndex &index, int role ) const
     {
       if ( QgsMapLayer *layer = QgsLayerTree::toLayer( node )->layer() )
       {
-        QString title =
-          !layer->title().isEmpty() ? layer->title() :
-          !layer->shortName().isEmpty() ? layer->shortName() :
-          layer->name();
+        QString title = !layer->metadata().title().isEmpty() ? layer->metadata().title() :
+                        !layer->serverProperties()->title().isEmpty() ? layer->serverProperties()->title() :
+                        !layer->serverProperties()->shortName().isEmpty() ? layer->serverProperties()->shortName() :
+                        layer->name();
 
         title = "<b>" + title.toHtmlEscaped() + "</b>";
 
@@ -292,10 +295,11 @@ QVariant QgsLayerTreeModel::data( const QModelIndex &index, int role ) const
         QStringList parts;
         parts << title;
 
-        if ( !layer->abstract().isEmpty() )
+        const QString abstract = !layer->metadata().abstract().isEmpty() ? layer->metadata().abstract() : layer->serverProperties()->abstract();
+        if ( !abstract.isEmpty() )
         {
           parts << QString();
-          const QStringList abstractLines = layer->abstract().split( '\n' );
+          const QStringList abstractLines = abstract.split( '\n' );
           for ( const auto &l : abstractLines )
           {
             parts << l.toHtmlEscaped();
@@ -1072,9 +1076,11 @@ void QgsLayerTreeModel::connectToRootNode()
 
 void QgsLayerTreeModel::disconnectFromRootNode()
 {
-  disconnect( mRootNode, nullptr, this, nullptr );
-
-  disconnectFromLayers( mRootNode );
+  if ( mRootNode )
+  {
+    disconnect( mRootNode, nullptr, this, nullptr );
+    disconnectFromLayers( mRootNode );
+  }
 }
 
 void QgsLayerTreeModel::recursivelyEmitDataChanged( const QModelIndex &idx )

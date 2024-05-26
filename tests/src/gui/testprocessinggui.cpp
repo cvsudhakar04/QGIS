@@ -3805,6 +3805,18 @@ void TestProcessingGui::testMultipleFileSelectionDialog()
   QCOMPARE( dlg->mModel->data( dlg->mModel->index( 0, 0 ) ).toString(), QStringLiteral( "polygon [EPSG:4326]" ) );
   QCOMPARE( dlg->mModel->data( dlg->mModel->index( 0, 0 ), Qt::UserRole ).toString(), polygon->id() );
 
+  // vector any geometry type
+  param = std::make_unique< QgsProcessingParameterMultipleLayers >( QString(), QString(), Qgis::ProcessingSourceType::VectorAnyGeometry );
+  dlg = std::make_unique< QgsProcessingMultipleInputPanelWidget >( param.get(), QVariantList(), QList<QgsProcessingModelChildParameterSource >() );
+  dlg->setProject( QgsProject::instance() );
+  QCOMPARE( dlg->mModel->rowCount(), 3 );
+  QCOMPARE( dlg->mModel->data( dlg->mModel->index( 0, 0 ) ).toString(), QStringLiteral( "line [EPSG:4326]" ) );
+  QCOMPARE( dlg->mModel->data( dlg->mModel->index( 0, 0 ), Qt::UserRole ).toString(), line->id() );
+  QCOMPARE( dlg->mModel->data( dlg->mModel->index( 1, 0 ) ).toString(), QStringLiteral( "point [EPSG:4326]" ) );
+  QCOMPARE( dlg->mModel->data( dlg->mModel->index( 1, 0 ), Qt::UserRole ).toString(), point->id() );
+  QCOMPARE( dlg->mModel->data( dlg->mModel->index( 2, 0 ) ).toString(), QStringLiteral( "polygon [EPSG:4326]" ) );
+  QCOMPARE( dlg->mModel->data( dlg->mModel->index( 2, 0 ), Qt::UserRole ).toString(), polygon->id() );
+
   // vector any type
   param = std::make_unique< QgsProcessingParameterMultipleLayers >( QString(), QString(), Qgis::ProcessingSourceType::Vector );
   dlg = std::make_unique< QgsProcessingMultipleInputPanelWidget >( param.get(), QVariantList(), QList<QgsProcessingModelChildParameterSource >() );
@@ -9976,6 +9988,9 @@ void TestProcessingGui::testDxfLayersWrapper()
   QVariantMap layerMap;
   layerMap["layer"] = "PointLayer";
   layerMap["attributeIndex"] = -1;
+  layerMap["overriddenLayerName"] = QString();
+  layerMap["buildDataDefinedBlocks"] = DEFAULT_DXF_DATA_DEFINED_BLOCKS;
+  layerMap["dataDefinedBlocksMaximumNumberOfClasses"] = -1;
   layerList.append( layerMap );
 
   QVERIFY( definition.checkValueIsAcceptable( layerList, &context ) );
@@ -9986,7 +10001,7 @@ void TestProcessingGui::testDxfLayersWrapper()
 
   QVERIFY( definition.checkValueIsAcceptable( value, &context ) );
   QString valueAsPythonString = definition.valueAsPythonString( value, context );
-  QCOMPARE( valueAsPythonString, QStringLiteral( "[{'layer': '%1','attributeIndex': -1}]" ).arg( vectorLayer->source() ) );
+  QCOMPARE( valueAsPythonString, QStringLiteral( "[{'layer': '%1','attributeIndex': -1,'overriddenLayerName': '','buildDataDefinedBlocks': True,'dataDefinedBlocksMaximumNumberOfClasses': -1}]" ).arg( vectorLayer->source() ) );
 }
 
 void TestProcessingGui::testAlignRasterLayersWrapper()

@@ -2636,7 +2636,7 @@ class TestPyQgsPostgresProvider(QgisTestCase, ProviderTestCase):
         f.setAttribute('test_string', 'QGIS Rocks')
 
         dp = vl.dataProvider()
-        self.assertNotEqual(dp.defaultValue(0), QVariant())
+        self.assertNotEqual(dp.defaultValue(0), NULL)
 
     @unittest.skipIf(os.environ.get('QGIS_CONTINUOUS_INTEGRATION_RUN', 'true'), 'Test flaky')
     def testDefaultValuesAndClauses(self):
@@ -2706,6 +2706,40 @@ class TestPyQgsPostgresProvider(QgisTestCase, ProviderTestCase):
             3).startswith(now.strftime('%Y-%m-%d')))
         self.assertEqual(feature.attribute(4), 123)
         self.assertEqual(feature.attribute(5), 'My default')
+
+    def testNoDefaultValueClauseForPKWithNoDefaultValue(self):
+        """Test issue GH #54058"""
+
+        self.execSQLCommand(
+            'ALTER TABLE IF EXISTS qgis_test."gh_54058" DROP CONSTRAINT IF EXISTS pk_gh_54058;')
+        self.execSQLCommand(
+            'DROP TABLE IF EXISTS qgis_test."gh_54058" CASCADE;')
+        self.execSQLCommand(
+            'CREATE TABLE qgis_test."gh_54058" ( "T_Id" integer NOT NULL, name text );')
+        self.execSQLCommand(
+            'ALTER TABLE qgis_test."gh_54058" ADD CONSTRAINT pk_gh_54058 PRIMARY KEY ("T_Id");')
+
+        vl = QgsVectorLayer(self.dbconn + ' sslmode=disable key=\'id\' table="qgis_test"."gh_54058" () sql=', 'gh_54058', 'postgres')
+        self.assertTrue(vl.isValid())
+
+        dp = vl.dataProvider()
+        self.assertEqual(dp.defaultValueClause(0), '')  # Not nextVal(NULL) anymore!
+
+    def testNoDefaultValueClauseForUniqueNotNullFieldWithNoDefaultValue(self):
+        """Test issue GH #54058b"""
+
+        self.execSQLCommand(
+            'DROP TABLE IF EXISTS qgis_test."gh_54058b" CASCADE;')
+        self.execSQLCommand(
+            'CREATE TABLE qgis_test."gh_54058b" ( "T_Id" integer NOT NULL, name varchar(8) UNIQUE, codigo integer NOT NULL UNIQUE);')
+
+        vl = QgsVectorLayer(self.dbconn + ' sslmode=disable key=\'id\' table="qgis_test"."gh_54058b" () sql=', 'gh_54058b', 'postgres')
+        self.assertTrue(vl.isValid())
+
+        dp = vl.dataProvider()
+        self.assertEqual(dp.defaultValueClause(0), '')  # The issue didn't occur here
+        self.assertEqual(dp.defaultValueClause(1), '')  # The issue didn't occur here
+        self.assertEqual(dp.defaultValueClause(2), '')  # Not nextVal(NULL) anymore!
 
     def testEncodeDecodeUri(self):
         """Test PG encode/decode URI"""

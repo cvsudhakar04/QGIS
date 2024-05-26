@@ -20,8 +20,6 @@ class QgsPoint3DSymbol : QgsAbstract3DSymbol /NoDefaultCtors/
 
    This is not considered stable API, and may change in future QGIS releases. It is
    exposed to the Python bindings as a tech preview only.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -99,7 +97,7 @@ Returns 3D shape for points
 Sets 3D shape for points
 %End
 
-    QMap<QString, QVariant> shapeProperties() const;
+    QVariantMap shapeProperties() const;
 %Docstring
 Returns a key-value dictionary of point shape properties.
 
@@ -120,7 +118,7 @@ used when the property has not been explicitly set.
 .. versionadded:: 3.36
 %End
 
-    void setShapeProperties( const QMap<QString, QVariant> &properties );
+    void setShapeProperties( const QVariantMap &properties );
 %Docstring
 Sets a key-value dictionary of point shape properties
 %End

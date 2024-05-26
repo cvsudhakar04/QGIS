@@ -31,6 +31,7 @@ email                : a.furieri@lqt.it
 #include "qgsspatialitetransaction.h"
 #include "qgsspatialiteproviderconnection.h"
 #include "qgsdbquerylog.h"
+#include "qgsdbquerylog_p.h"
 
 #include "qgsjsonutils.h"
 #include "qgsvectorlayer.h"
@@ -656,6 +657,11 @@ QgsSpatiaLiteProvider::~QgsSpatiaLiteProvider()
   invalidateConnections( mSqlitePath );
 }
 
+Qgis::DataProviderFlags QgsSpatiaLiteProvider::flags() const
+{
+  return Qgis::DataProviderFlag::FastExtent2D | Qgis::DataProviderFlag::FastExtent3D;
+}
+
 QgsAbstractFeatureSource *QgsSpatiaLiteProvider::featureSource() const
 {
   return new QgsSpatiaLiteFeatureSource( this );
@@ -1105,8 +1111,8 @@ QVariant QgsSpatiaLiteProvider::defaultValue( int fieldId ) const
     }
   }
 
-  ( void )mAttributeFields.at( fieldId ).convertCompatible( resultVar );
-  return resultVar;
+  const bool compatible = mAttributeFields.at( fieldId ).convertCompatible( resultVar );
+  return compatible && !QgsVariantUtils::isNull( resultVar ) ? resultVar : QVariant();
 }
 
 QString QgsSpatiaLiteProvider::defaultValueClause( int fieldIndex ) const
@@ -5729,30 +5735,7 @@ bool QgsSpatiaLiteProvider::getQueryGeometryDetails()
       sqlite3_free_table( results );
     }
 
-    if ( fType == QLatin1String( "POINT" ) )
-    {
-      mGeomType = Qgis::WkbType::Point;
-    }
-    else if ( fType == QLatin1String( "MULTIPOINT" ) )
-    {
-      mGeomType = Qgis::WkbType::MultiPoint;
-    }
-    else if ( fType == QLatin1String( "LINESTRING" ) )
-    {
-      mGeomType = Qgis::WkbType::LineString;
-    }
-    else if ( fType == QLatin1String( "MULTILINESTRING" ) )
-    {
-      mGeomType = Qgis::WkbType::MultiLineString;
-    }
-    else if ( fType == QLatin1String( "POLYGON" ) )
-    {
-      mGeomType = Qgis::WkbType::Polygon;
-    }
-    else if ( fType == QLatin1String( "MULTIPOLYGON" ) )
-    {
-      mGeomType = Qgis::WkbType::MultiPolygon;
-    }
+    mGeomType = QgsWkbTypes::parseType( fType );
     mSrid = xSrid.toInt();
   }
 

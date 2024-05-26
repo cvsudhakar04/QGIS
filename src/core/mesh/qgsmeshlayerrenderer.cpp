@@ -42,6 +42,7 @@
 #include "qgsapplication.h"
 #include "qgsruntimeprofiler.h"
 #include "qgsexpressioncontextutils.h"
+#include "qgsmeshlayerelevationproperties.h"
 
 QgsMeshLayerRenderer::QgsMeshLayerRenderer(
   QgsMeshLayer *layer,
@@ -73,6 +74,77 @@ QgsMeshLayerRenderer::QgsMeshLayerRenderer(
   mNativeMesh = *( layer->nativeMesh() );
   mLayerExtent = layer->extent();
 
+  if ( layer->elevationProperties() && layer->elevationProperties()->hasElevation() )
+  {
+    QgsMeshLayerElevationProperties *elevProp = qobject_cast<QgsMeshLayerElevationProperties *>( layer->elevationProperties() );
+
+    mRenderElevationMap = true;
+    mElevationScale = elevProp->zScale();
+    mElevationOffset = elevProp->zOffset();
+
+    if ( !context.zRange().isInfinite() )
+    {
+      switch ( elevProp->mode() )
+      {
+        case Qgis::MeshElevationMode::FixedElevationRange:
+          // don't need to handle anything here -- the layer renderer will never be created if the
+          // render context range doesn't match the layer's fixed elevation range
+          break;
+
+        case Qgis::MeshElevationMode::FromVertices:
+        {
+          // TODO -- filtering by mesh z values is not currently implemented
+          break;
+        }
+
+        case Qgis::MeshElevationMode::FixedRangePerGroup:
+        {
+          // find the top-most group which matches the map range and parent group
+          int currentMatchingVectorGroup = -1;
+          int currentMatchingScalarGroup = -1;
+          QgsDoubleRange currentMatchingVectorRange;
+          QgsDoubleRange currentMatchingScalarRange;
+
+          const QMap<int, QgsDoubleRange > rangePerGroup = elevProp->fixedRangePerGroup();
+
+          const int activeVectorDatasetGroup = mRendererSettings.activeVectorDatasetGroup();
+          const int activeScalarDatasetGroup = mRendererSettings.activeScalarDatasetGroup();
+
+          for ( auto it = rangePerGroup.constBegin(); it != rangePerGroup.constEnd(); ++it )
+          {
+            if ( it.value().overlaps( context.zRange() ) )
+            {
+              const bool matchesVectorParentGroup = QgsMeshLayerUtils::haveSameParentQuantity( layer, QgsMeshDatasetIndex( activeVectorDatasetGroup ), QgsMeshDatasetIndex( it.key() ) );
+              const bool matchesScalarParentGroup = QgsMeshLayerUtils::haveSameParentQuantity( layer, QgsMeshDatasetIndex( activeScalarDatasetGroup ), QgsMeshDatasetIndex( it.key() ) );
+
+              if ( matchesVectorParentGroup && (
+                     currentMatchingVectorRange.isInfinite()
+                     || ( it.value().includeUpper() && it.value().upper() >= currentMatchingVectorRange.upper() )
+                     || ( !currentMatchingVectorRange.includeUpper() && it.value().upper() >= currentMatchingVectorRange.upper() ) ) )
+              {
+                currentMatchingVectorGroup = it.key();
+                currentMatchingVectorRange = it.value();
+              }
+
+              if ( matchesScalarParentGroup && (
+                     currentMatchingScalarRange.isInfinite()
+                     || ( it.value().includeUpper() && it.value().upper() >= currentMatchingScalarRange.upper() )
+                     || ( !currentMatchingScalarRange.includeUpper() && it.value().upper() >= currentMatchingScalarRange.upper() ) ) )
+              {
+                currentMatchingScalarGroup = it.key();
+                currentMatchingScalarRange = it.value();
+              }
+            }
+          }
+          if ( currentMatchingVectorGroup >= 0 )
+            mRendererSettings.setActiveVectorDatasetGroup( currentMatchingVectorGroup );
+          if ( currentMatchingScalarGroup >= 0 )
+            mRendererSettings.setActiveScalarDatasetGroup( currentMatchingScalarGroup );
+        }
+      }
+    }
+  }
+
   // copy triangular mesh
   copyTriangularMeshes( layer, context );
 
@@ -86,13 +158,6 @@ QgsMeshLayerRenderer::QgsMeshLayerRenderer(
   prepareLabeling( layer, attrs );
 
   mClippingRegions = QgsMapClippingUtils::collectClippingRegionsForLayer( *renderContext(), layer );
-
-  if ( layer->elevationProperties() && layer->elevationProperties()->hasElevation() )
-  {
-    mRenderElevationMap = true;
-    mElevationScale = layer->elevationProperties()->zScale();
-    mElevationOffset = layer->elevationProperties()->zOffset();
-  }
 
   mPreparationTime = timer.elapsed();
 }
@@ -134,9 +199,9 @@ void QgsMeshLayerRenderer::copyScalarDatasetValues( QgsMeshLayer *layer )
 {
   QgsMeshDatasetIndex datasetIndex;
   if ( renderContext()->isTemporal() )
-    datasetIndex = layer->activeScalarDatasetAtTime( renderContext()->temporalRange() );
+    datasetIndex = layer->activeScalarDatasetAtTime( renderContext()->temporalRange(), mRendererSettings.activeScalarDatasetGroup() );
   else
-    datasetIndex = layer->staticScalarDatasetIndex();
+    datasetIndex = layer->staticScalarDatasetIndex( mRendererSettings.activeScalarDatasetGroup() );
 
   // Find out if we can use cache up to date. If yes, use it and return
   const int datasetGroupCount = layer->datasetGroupCount();
@@ -235,9 +300,9 @@ void QgsMeshLayerRenderer::copyVectorDatasetValues( QgsMeshLayer *layer )
 {
   QgsMeshDatasetIndex datasetIndex;
   if ( renderContext()->isTemporal() )
-    datasetIndex = layer->activeVectorDatasetAtTime( renderContext()->temporalRange() );
+    datasetIndex = layer->activeVectorDatasetAtTime( renderContext()->temporalRange(), mRendererSettings.activeVectorDatasetGroup() );
   else
-    datasetIndex = layer->staticVectorDatasetIndex();
+    datasetIndex = layer->staticVectorDatasetIndex( mRendererSettings.activeVectorDatasetGroup() );
 
   // Find out if we can use cache up to date. If yes, use it and return
   const int datasetGroupCount = layer->datasetGroupCount();
@@ -537,14 +602,14 @@ void QgsMeshLayerRenderer::renderScalarDatasetOnEdges( const QgsMeshRendererScal
   QgsRenderContext &context = *renderContext();
   const QVector<QgsMeshEdge> edges = mTriangularMesh.edges();
   const QVector<QgsMeshVertex> vertices = mTriangularMesh.vertices();
-  const QList<int> egdesInExtent = mTriangularMesh.edgeIndexesForRectangle( context.mapExtent() );
+  const QList<int> edgesInExtent = mTriangularMesh.edgeIndexesForRectangle( context.mapExtent() );
 
   QgsInterpolatedLineRenderer edgePlotter;
   edgePlotter.setInterpolatedColor( QgsInterpolatedLineColor( scalarSettings.colorRampShader() ) );
   edgePlotter.setInterpolatedWidth( QgsInterpolatedLineWidth( scalarSettings.edgeStrokeWidth() ) );
   edgePlotter.setWidthUnit( scalarSettings.edgeStrokeWidthUnit() );
 
-  for ( const int i : egdesInExtent )
+  for ( const int i : edgesInExtent )
   {
     if ( context.renderingStopped() )
       break;

@@ -118,7 +118,6 @@ class QgsAttributes : public QVector<QVariant>
      * Returns a QgsAttributeMap of the attribute values. Null values are
      * excluded from the map.
      * \note not available in Python bindings
-     * \since QGIS 3.0
      */
     CORE_EXPORT QgsAttributeMap toMap() const SIP_SKIP;
 
@@ -191,16 +190,37 @@ typedef QVector<QVariant> QgsAttributes;
     return 1;
   }
 
-  QgsAttributes *qv = new QgsAttributes;
   SIP_SSIZE_T listSize = PyList_GET_SIZE( sipPy );
-  qv->reserve( listSize );
+  // Initialize attributes to null. This has two motivations:
+  // 1. It speeds up the QVector construction, as otherwise we are creating n default QVariant objects (default QVariant constructor is not free!)
+  // 2. It lets us shortcut in the loop below when a Py_None is encountered in the list
+  const QVariant nullVariant( QVariant::Int );
+  QgsAttributes *qv = new QgsAttributes( listSize, nullVariant );
+  QVariant *outData = qv->data();
 
   for ( SIP_SSIZE_T i = 0; i < listSize; ++i )
   {
     PyObject *obj = PyList_GET_ITEM( sipPy, i );
     if ( obj == Py_None )
     {
-      qv->append( QVariant( QVariant::Int ) );
+      // outData was already initialized to null values
+      *outData++;
+    }
+    else if ( PyBool_Check( obj ) )
+    {
+      *outData++ = QVariant( PyObject_IsTrue( obj ) == 1 );
+    }
+    else if ( PyLong_Check( obj ) )
+    {
+      *outData++ = QVariant( PyLong_AsLongLong( obj ) );
+    }
+    else if ( PyFloat_Check( obj ) )
+    {
+      *outData++ = QVariant( PyFloat_AsDouble( obj ) );
+    }
+    else if ( PyUnicode_Check( obj ) )
+    {
+      *outData++ = QVariant( QString::fromUtf8( PyUnicode_AsUTF8( obj ) ) );
     }
     else
     {
@@ -215,7 +235,7 @@ typedef QVector<QVariant> QgsAttributes;
         return 0;
       }
 
-      qv->append( *t );
+      *outData++ = *t;
       sipReleaseType( t, sipType_QVariant, state );
     }
   }

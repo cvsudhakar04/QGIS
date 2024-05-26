@@ -31,8 +31,6 @@ method. This will perform the paint effect on the intercepted drawing operations
 and render the result to the render context's paint device.
 
 .. seealso:: :py:class:`QgsPaintEffectRegistry`
-
-.. versionadded:: 2.9
 %End
 
 %TypeHeaderCode
@@ -78,7 +76,7 @@ and render the result to the render context's paint device.
 %End
   public:
 
-    enum DrawMode
+    enum DrawMode /BaseType=IntEnum/
     {
       Modifier,
       Render,
@@ -107,7 +105,7 @@ Duplicates an effect by creating a deep copy of the effect
 :return: clone of paint effect
 %End
 
-    virtual QMap<QString, QVariant> properties() const = 0;
+    virtual QVariantMap properties() const = 0;
 %Docstring
 Returns the properties describing the paint effect encoded in a
 string format.
@@ -119,7 +117,7 @@ string format.
 .. seealso:: :py:func:`saveProperties`
 %End
 
-    virtual void readProperties( const QMap<QString, QVariant> &props ) = 0;
+    virtual void readProperties( const QVariantMap &props ) = 0;
 %Docstring
 Reads a string map of an effect's properties and restores the effect
 to the state described by the properties map.
@@ -328,8 +326,6 @@ The draw source effect can be used to draw an unaltered copy of the original sou
 picture. Minor changes like lowering the opacity and applying a blend mode are
 supported, however these changes will force the resultant output to be rasterized.
 If no alterations are performed then the original picture will be rendered as a vector.
-
-.. versionadded:: 2.9
 %End
 
 %TypeHeaderCode
@@ -342,7 +338,7 @@ If no alterations are performed then the original picture will be rendered as a 
 Constructor for QgsDrawSourceEffect
 %End
 
-    static QgsPaintEffect *create( const QMap<QString, QVariant> &map ) /Factory/;
+    static QgsPaintEffect *create( const QVariantMap &map ) /Factory/;
 %Docstring
 Creates a new :py:class:`QgsDrawSource` effect from a properties string map.
 
@@ -354,9 +350,9 @@ Creates a new :py:class:`QgsDrawSource` effect from a properties string map.
     virtual QString type() const;
     virtual QgsDrawSourceEffect *clone() const /Factory/;
 
-    virtual QMap<QString, QVariant> properties() const;
+    virtual QVariantMap properties() const;
 
-    virtual void readProperties( const QMap<QString, QVariant> &props );
+    virtual void readProperties( const QVariantMap &props );
 
 
     void setOpacity( const double opacity );
@@ -410,8 +406,6 @@ class QgsEffectPainter
 {
 %Docstring(signature="appended")
 A class to manager painter saving and restoring required for effect drawing
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -424,8 +418,6 @@ A class to manager painter saving and restoring required for effect drawing
 QgsEffectPainter constructor
 
 :param renderContext: the :py:class:`QgsRenderContext` object
-
-.. versionadded:: 3.0
 %End
 
     QgsEffectPainter( QgsRenderContext &renderContext, QgsPaintEffect *effect );
@@ -434,8 +426,6 @@ QgsEffectPainter constructor alternative if no painter translation is needed
 
 :param renderContext: the :py:class:`QgsRenderContext` object
 :param effect: the :py:class:`QgsPaintEffect` object
-
-.. versionadded:: 3.0
 %End
     ~QgsEffectPainter();
 

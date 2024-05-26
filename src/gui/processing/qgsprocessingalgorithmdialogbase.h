@@ -43,7 +43,6 @@ class QgsTask;
  * \ingroup gui
  * \brief QgsProcessingFeedback subclass linked to a QgsProcessingAlgorithmDialogBase
  * \note Not stable API
- * \since QGIS 3.0
  */
 class QgsProcessingAlgorithmDialogFeedback : public QgsProcessingFeedback
 {
@@ -85,7 +84,6 @@ class QgsProcessingAlgorithmDialogFeedback : public QgsProcessingFeedback
  * \ingroup gui
  * \brief Base class for processing algorithm dialogs.
  * \note This is not considered stable API and may change in future QGIS versions.
- * \since QGIS 3.0
  */
 class GUI_EXPORT QgsProcessingAlgorithmDialogBase : public QDialog, public QgsProcessingParametersGenerator, public QgsProcessingContextGenerator, private Ui::QgsProcessingDialogBase
 {
@@ -394,7 +392,6 @@ class GUI_EXPORT QgsProcessingAlgorithmDialogBase : public QDialog, public QgsPr
     /**
      * Formats an input \a string for display in the log tab.
      *
-     * \since QGIS 3.0.1
      */
     static QString formatStringForLog( const QString &string );
 
@@ -415,6 +412,15 @@ class GUI_EXPORT QgsProcessingAlgorithmDialogBase : public QDialog, public QgsPr
     void applyContextOverrides( QgsProcessingContext *context );
 
   signals:
+
+    /**
+     * Emitted when the algorithm is about to run in the specified \a context.
+     *
+     * This signal can be used to tweak the \a context prior to the algorithm execution.
+     *
+     * \since QGIS 3.38
+     */
+    void algorithmAboutToRun( QgsProcessingContext *context );
 
     /**
      * Emitted whenever an algorithm has finished executing in the dialog.
@@ -503,7 +509,6 @@ class GUI_EXPORT QgsProcessingAlgorithmDialogBase : public QDialog, public QgsPr
  * \ingroup gui
  * \brief A modal dialog for showing algorithm progress and log messages.
  * \note This is not considered stable API and may change in future QGIS versions.
- * \since QGIS 3.0
  */
 class QgsProcessingAlgorithmProgressDialog : public QDialog, private Ui::QgsProcessingProgressDialogBase
 {

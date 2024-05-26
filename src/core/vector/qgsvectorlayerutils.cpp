@@ -36,6 +36,7 @@
 #include "qgsauxiliarystorage.h"
 #include "qgssymbollayerreference.h"
 #include "qgspainteffect.h"
+#include "qgsunsetattributevalue.h"
 
 QgsFeatureIterator QgsVectorLayerUtils::getValuesIterator( const QgsVectorLayer *layer, const QString &fieldOrExpression, bool &ok, bool selectedOnly )
 {
@@ -643,7 +644,29 @@ QgsFeature QgsVectorLayerUtils::duplicateFeature( QgsVectorLayer *layer, const Q
   QgsExpressionContext context = layer->createExpressionContext();
   context.setFeature( feature );
 
-  QgsFeature newFeature = createFeature( layer, feature.geometry(), feature.attributes().toMap(), &context );
+  //respect field duplicate policy
+  QgsAttributeMap attributeMap;
+  const int fieldCount = layer->fields().count();
+  for ( int fieldIdx = 0; fieldIdx < fieldCount; ++fieldIdx )
+  {
+    const QgsField field = layer->fields().at( fieldIdx );
+    switch ( field.duplicatePolicy() )
+    {
+      case Qgis::FieldDuplicatePolicy::DefaultValue:
+        //do nothing - default values ​​are determined
+        break;
+
+      case Qgis::FieldDuplicatePolicy::Duplicate:
+        attributeMap.insert( fieldIdx, feature.attribute( fieldIdx ) );
+        break;
+
+      case Qgis::FieldDuplicatePolicy::UnsetField:
+        attributeMap.insert( fieldIdx, QgsUnsetAttributeValue() );
+        break;
+    }
+  }
+
+  QgsFeature newFeature = createFeature( layer, feature.geometry(), attributeMap, &context );
   layer->addFeature( newFeature );
 
   const QList<QgsRelation> relations = project->relationManager()->referencedRelations( layer );
@@ -1239,9 +1262,37 @@ QString QgsVectorLayerUtils::guessFriendlyIdentifierField( const QgsFields &fiel
       break;
   }
 
-  const QString candidateName = bestCandidateName.isEmpty() ? bestCandidateNameWithAntiCandidate : bestCandidateName;
+  QString candidateName = bestCandidateName.isEmpty() ? bestCandidateNameWithAntiCandidate : bestCandidateName;
   if ( !candidateName.isEmpty() )
   {
+    // Special case for layers got from WFS using the OGR GMLAS field parsing logic.
+    // Such layers contain a "id" field (the gml:id attribute of the object),
+    // as well as a gml_name (a <gml:name>) element. However this gml:name is often
+    // absent, partly because it is a property of the base class in GML schemas, and
+    // that a lot of readers are not able to deduce its potential presence.
+    // So try to look at another field whose name would end with _name
+    // And fallback to using the "id" field that should always be filled.
+    if ( candidateName == QLatin1String( "gml_name" ) &&
+         fields.indexOf( QLatin1String( "id" ) ) >= 0 )
+    {
+      candidateName.clear();
+      // Try to find a field ending with "_name", which is not "gml_name"
+      for ( const QgsField &field : std::as_const( fields ) )
+      {
+        const QString fldName = field.name();
+        if ( fldName != QLatin1String( "gml_name" ) && fldName.endsWith( QLatin1String( "_name" ) ) )
+        {
+          candidateName = fldName;
+          break;
+        }
+      }
+      if ( candidateName.isEmpty() )
+      {
+        // Fallback to "id"
+        candidateName = QStringLiteral( "id" );
+      }
+    }
+
     if ( foundFriendly )
       *foundFriendly = true;
     return candidateName;

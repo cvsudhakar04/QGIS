@@ -362,13 +362,21 @@ class CORE_EXPORT QgsMeshLayerUtils
      * \param triangularMesh the triangular mesh
      * \param verticalMagnitude the vertical magnitude values used instead Z value of vertices
      * \param isRelative TRUE if the vertical magnitude is relative to the Z value of vertices
-     * \returns normales (3D vector) on all the vertices
+     * \returns normals (3D vector) on all the vertices
      * \since QGIS 3.14
      */
     static QVector<QVector3D> calculateNormals(
       const QgsTriangularMesh &triangularMesh,
       const QVector<double> &verticalMagnitude,
       bool isRelative );
+
+    /**
+     * Returns TRUE if the datasets from \a layer at \a index1 and \a index2 share the same parent quantity.
+     *
+     * \since QGIS 3.38
+     */
+    static bool haveSameParentQuantity( const QgsMeshLayer *layer, const QgsMeshDatasetIndex &index1, const QgsMeshDatasetIndex &index2 );
+
 };
 
 ///@endcond

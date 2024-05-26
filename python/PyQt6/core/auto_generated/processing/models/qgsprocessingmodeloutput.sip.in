@@ -14,8 +14,6 @@ class QgsProcessingModelOutput : QgsProcessingModelComponent
 {
 %Docstring(signature="appended")
 Represents a final output created by the model.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -120,9 +118,9 @@ Saves this output to a QVariant.
 .. seealso:: :py:func:`loadVariant`
 %End
 
-    bool loadVariant( const QMap<QString, QVariant> &map );
+    bool loadVariant( const QVariantMap &map );
 %Docstring
-Loads this output from a QMap<QString, QVariant>.
+Loads this output from a QVariantMap.
 
 .. seealso:: :py:func:`toVariant`
 %End

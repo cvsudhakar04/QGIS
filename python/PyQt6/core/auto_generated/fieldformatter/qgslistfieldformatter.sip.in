@@ -14,8 +14,6 @@ Field formatter for a list field.
 
 This represents a list type value.
 Values will be represented as a comma-separated list.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -30,7 +28,7 @@ Default constructor of field formatter for a list field.
     virtual QString id() const;
 
 
-    virtual QString representValue( QgsVectorLayer *layer, int fieldIndex, const QMap<QString, QVariant> &config, const QVariant &cache, const QVariant &value ) const;
+    virtual QString representValue( QgsVectorLayer *layer, int fieldIndex, const QVariantMap &config, const QVariant &cache, const QVariant &value ) const;
 
 };
 

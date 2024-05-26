@@ -16,8 +16,6 @@ class QgsProcessingFeatureSourceDefinition
 %Docstring(signature="appended")
 
 Encapsulates settings relating to a feature source input to a processing algorithm.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -77,7 +75,7 @@ the default geometry check method (as dictated by :py:class:`QgsProcessingContex
 
     QVariant toVariant() const;
 %Docstring
-Saves this source definition to a QMap<QString, QVariant>, wrapped in a QVariant.
+Saves this source definition to a QVariantMap, wrapped in a QVariant.
 You can use :py:class:`QgsXmlUtils`.writeVariant to save it to an XML document.
 
 .. seealso:: :py:func:`loadVariant`
@@ -85,9 +83,9 @@ You can use :py:class:`QgsXmlUtils`.writeVariant to save it to an XML document.
 .. versionadded:: 3.14
 %End
 
-    bool loadVariant( const QMap<QString, QVariant> &map );
+    bool loadVariant( const QVariantMap &map );
 %Docstring
-Loads this source definition from a QMap<QString, QVariant>, wrapped in a QVariant.
+Loads this source definition from a QVariantMap, wrapped in a QVariant.
 You can use :py:class:`QgsXmlUtils`.readVariant to load it from an XML document.
 
 .. seealso:: :py:func:`toVariant`
@@ -110,8 +108,6 @@ class QgsProcessingOutputLayerDefinition
 %Docstring(signature="appended")
 
 Encapsulates settings relating to a feature sink or output raster layer for a processing algorithm.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -139,7 +135,7 @@ to automatically load the resulting sink/layer after completing processing.
 
     QString destinationName;
 
-    QMap<QString, QVariant> createOptions;
+    QVariantMap createOptions;
 
     bool useRemapping() const;
 %Docstring
@@ -176,7 +172,7 @@ Calling this method will set :py:func:`~QgsProcessingOutputLayerDefinition.useRe
 
     QVariant toVariant() const;
 %Docstring
-Saves this output layer definition to a QMap<QString, QVariant>, wrapped in a QVariant.
+Saves this output layer definition to a QVariantMap, wrapped in a QVariant.
 You can use :py:class:`QgsXmlUtils`.writeVariant to save it to an XML document.
 
 .. seealso:: :py:func:`loadVariant`
@@ -184,9 +180,9 @@ You can use :py:class:`QgsXmlUtils`.writeVariant to save it to an XML document.
 .. versionadded:: 3.2
 %End
 
-    bool loadVariant( const QMap<QString, QVariant> &map );
+    bool loadVariant( const QVariantMap &map );
 %Docstring
-Loads this output layer definition from a QMap<QString, QVariant>, wrapped in a QVariant.
+Loads this output layer definition from a QVariantMap, wrapped in a QVariant.
 You can use :py:class:`QgsXmlUtils`.readVariant to load it from an XML document.
 
 .. seealso:: :py:func:`toVariant`
@@ -215,8 +211,6 @@ Base class for the definition of processing parameters.
 
 Parameter definitions encapsulate properties regarding the behavior of parameters,
 their acceptable ranges, defaults, etc.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -590,24 +584,24 @@ i.e. the intended end use of the generated Python code.
 .. versionadded:: 3.6
 %End
 
-    virtual QMap<QString, QVariant> toVariantMap() const;
+    virtual QVariantMap toVariantMap() const;
 %Docstring
-Saves this parameter to a QMap<QString, QVariant>. Subclasses should ensure that they call the base class
+Saves this parameter to a QVariantMap. Subclasses should ensure that they call the base class
 method and then extend the result with additional properties.
 
 .. seealso:: :py:func:`fromVariantMap`
 %End
 
-    virtual bool fromVariantMap( const QMap<QString, QVariant> &map );
+    virtual bool fromVariantMap( const QVariantMap &map );
 %Docstring
-Restores this parameter to a QMap<QString, QVariant>. Subclasses should ensure that they call the base class
+Restores this parameter to a QVariantMap. Subclasses should ensure that they call the base class
 method.
 
 .. seealso:: :py:func:`toVariantMap`
 %End
 
 
-    QMap<QString, QVariant> &metadata();
+    QVariantMap &metadata();
 %Docstring
 Returns the parameter's freeform metadata. This is mostly used by parameter widget wrappers
 in order to customize their appearance and behavior.
@@ -615,7 +609,7 @@ in order to customize their appearance and behavior.
 .. seealso:: :py:func:`setMetadata`
 %End
 
-    void setMetadata( const QMap<QString, QVariant> &metadata );
+    void setMetadata( const QVariantMap &metadata );
 %Docstring
 Sets the parameter's freeform ``metadata``. This is mostly used by parameter widget wrappers
 in order to customize their appearance and behavior.
@@ -803,7 +797,7 @@ class QgsProcessingParameters
 
 A collection of utilities for working with parameters when running a processing algorithm.
 
-Parameters are stored in a QMap<QString, QVariant> and referenced by a unique string key.
+Parameters are stored in a QVariantMap and referenced by a unique string key.
 The QVariants in parameters are not usually accessed
 directly, and instead the high level API provided through :py:class:`QgsProcessingParameters`
 :py:func:`~QgsProcessingParameterDefinition.parameterAsString`, :py:func:`~QgsProcessingParameterDefinition.parameterAsDouble` are used instead.
@@ -811,8 +805,6 @@ directly, and instead the high level API provided through :py:class:`QgsProcessi
 Parameters are evaluated using a provided :py:class:`QgsProcessingContext`, allowing
 the evaluation to understand available map layers and expression contexts
 (for expression based parameters).
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -820,13 +812,13 @@ the evaluation to understand available map layers and expression contexts
 %End
   public:
 
-    static bool isDynamic( const QMap<QString, QVariant> &parameters, const QString &name );
+    static bool isDynamic( const QVariantMap &parameters, const QString &name );
 %Docstring
 Returns ``True`` if the parameter with matching ``name`` is a dynamic parameter, and must
 be evaluated once for every input feature processed.
 %End
 
-    static QString parameterAsString( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, const QgsProcessingContext &context );
+    static QString parameterAsString( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, const QgsProcessingContext &context );
 %Docstring
 Evaluates the parameter with matching ``definition`` to a static string value.
 %End
@@ -838,7 +830,7 @@ Evaluates the parameter with matching ``definition`` and ``value`` to a static s
 .. versionadded:: 3.4
 %End
 
-    static QString parameterAsExpression( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, const QgsProcessingContext &context );
+    static QString parameterAsExpression( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, const QgsProcessingContext &context );
 %Docstring
 Evaluates the parameter with matching ``definition`` to an expression.
 %End
@@ -850,7 +842,7 @@ Evaluates the parameter with matching ``definitionand`` ``value`` to an expressi
 .. versionadded:: 3.4
 %End
 
-    static double parameterAsDouble( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, const QgsProcessingContext &context );
+    static double parameterAsDouble( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, const QgsProcessingContext &context );
 %Docstring
 Evaluates the parameter with matching ``definition`` to a static double value.
 %End
@@ -862,7 +854,7 @@ Evaluates the parameter with matching ``definition`` and ``value`` to a static d
 .. versionadded:: 3.4
 %End
 
-    static int parameterAsInt( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, const QgsProcessingContext &context );
+    static int parameterAsInt( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, const QgsProcessingContext &context );
 %Docstring
 Evaluates the parameter with matching ``definition`` to a static integer value.
 %End
@@ -874,7 +866,7 @@ Evaluates the parameter with matching ``definition`` and ``value`` to a static i
 .. versionadded:: 3.4
 %End
 
-    static QList<int> parameterAsInts( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, const QgsProcessingContext &context );
+    static QList<int> parameterAsInts( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, const QgsProcessingContext &context );
 %Docstring
 Evaluates the parameter with matching ``definition`` to a list of integer values.
 
@@ -888,7 +880,7 @@ Evaluates the parameter with matching ``definition`` and ``value`` to a list of 
 .. versionadded:: 3.4
 %End
 
-    static QDateTime parameterAsDateTime( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, const QgsProcessingContext &context );
+    static QDateTime parameterAsDateTime( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, const QgsProcessingContext &context );
 %Docstring
 Evaluates the parameter with matching ``definition`` to a static datetime value.
 
@@ -910,7 +902,7 @@ Evaluates the parameter with matching ``definition`` and ``value`` to a static d
 .. versionadded:: 3.14
 %End
 
-    static QDate parameterAsDate( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, const QgsProcessingContext &context );
+    static QDate parameterAsDate( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, const QgsProcessingContext &context );
 %Docstring
 Evaluates the parameter with matching ``definition`` to a static date value.
 
@@ -932,7 +924,7 @@ Evaluates the parameter with matching ``definition`` and ``value`` to a static d
 .. versionadded:: 3.14
 %End
 
-    static QTime parameterAsTime( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, const QgsProcessingContext &context );
+    static QTime parameterAsTime( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, const QgsProcessingContext &context );
 %Docstring
 Evaluates the parameter with matching ``definition`` to a static time value.
 
@@ -954,7 +946,7 @@ Evaluates the parameter with matching ``definition`` and ``value`` to a static t
 .. versionadded:: 3.14
 %End
 
-    static int parameterAsEnum( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, const QgsProcessingContext &context );
+    static int parameterAsEnum( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, const QgsProcessingContext &context );
 %Docstring
 Evaluates the parameter with matching ``definition`` to a enum value.
 %End
@@ -966,7 +958,7 @@ Evaluates the parameter with matching ``definition`` and ``value`` to a enum val
 .. versionadded:: 3.4
 %End
 
-    static QList<int> parameterAsEnums( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, const QgsProcessingContext &context );
+    static QList<int> parameterAsEnums( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, const QgsProcessingContext &context );
 %Docstring
 Evaluates the parameter with matching ``definition`` to list of enum values.
 %End
@@ -978,7 +970,7 @@ Evaluates the parameter with matching ``definition`` and ``value`` to list of en
 .. versionadded:: 3.4
 %End
 
-    static QString parameterAsEnumString( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, const QgsProcessingContext &context );
+    static QString parameterAsEnumString( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, const QgsProcessingContext &context );
 %Docstring
 Evaluates the parameter with matching ``definition`` to a static enum string.
 
@@ -992,7 +984,7 @@ Evaluates the parameter with matching ``definition`` and ``value`` to a static e
 .. versionadded:: 3.18
 %End
 
-    static QStringList parameterAsEnumStrings( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, const QgsProcessingContext &context );
+    static QStringList parameterAsEnumStrings( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, const QgsProcessingContext &context );
 %Docstring
 Evaluates the parameter with matching ``definition`` to list of static enum strings.
 
@@ -1006,12 +998,12 @@ Evaluates the parameter with matching ``definition`` and ``value`` to list of st
 .. versionadded:: 3.18
 %End
 
-    static bool parameterAsBool( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, const QgsProcessingContext &context );
+    static bool parameterAsBool( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, const QgsProcessingContext &context );
 %Docstring
 Evaluates the parameter with matching ``definition`` to a static boolean value.
 %End
 
-    static bool parameterAsBoolean( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, const QgsProcessingContext &context );
+    static bool parameterAsBoolean( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, const QgsProcessingContext &context );
 %Docstring
 Evaluates the parameter with matching ``definition`` to a static boolean value.
 
@@ -1032,9 +1024,9 @@ Evaluates the parameter with matching ``definition`` and ``value`` to a static b
 .. versionadded:: 3.8
 %End
 
-    static QgsFeatureSink *parameterAsSink( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters,
+    static QgsFeatureSink *parameterAsSink( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters,
                                             const QgsFields &fields, Qgis::WkbType geometryType, const QgsCoordinateReferenceSystem &crs,
-                                            QgsProcessingContext &context, QString &destinationIdentifier /Out/, QgsFeatureSink::SinkFlags sinkFlags = QgsFeatureSink::SinkFlags(), const QMap<QString, QVariant> &createOptions = QMap<QString, QVariant>(), const QStringList &datasourceOptions = QStringList(), const QStringList &layerOptions = QStringList() ) /Factory/;
+                                            QgsProcessingContext &context, QString &destinationIdentifier /Out/, QgsFeatureSink::SinkFlags sinkFlags = QgsFeatureSink::SinkFlags(), const QVariantMap &createOptions = QVariantMap(), const QStringList &datasourceOptions = QStringList(), const QStringList &layerOptions = QStringList() ) /Factory/;
 %Docstring
 Evaluates the parameter with matching ``definition`` to a feature sink.
 
@@ -1055,7 +1047,7 @@ This function creates a new object and the caller takes responsibility for delet
 
     static QgsFeatureSink *parameterAsSink( const QgsProcessingParameterDefinition *definition, const QVariant &value,
                                             const QgsFields &fields, Qgis::WkbType geometryType, const QgsCoordinateReferenceSystem &crs,
-                                            QgsProcessingContext &context, QString &destinationIdentifier /Out/, QgsFeatureSink::SinkFlags sinkFlags = QgsFeatureSink::SinkFlags(), const QMap<QString, QVariant> &createOptions = QMap<QString, QVariant>(), const QStringList &datasourceOptions = QStringList(), const QStringList &layerOptions = QStringList() ) throw( QgsProcessingException ) /Factory/;
+                                            QgsProcessingContext &context, QString &destinationIdentifier /Out/, QgsFeatureSink::SinkFlags sinkFlags = QgsFeatureSink::SinkFlags(), const QVariantMap &createOptions = QVariantMap(), const QStringList &datasourceOptions = QStringList(), const QStringList &layerOptions = QStringList() ) throw( QgsProcessingException ) /Factory/;
 %Docstring
 Evaluates the parameter with matching ``definition`` and ``value`` to a feature sink.
 
@@ -1078,7 +1070,7 @@ This function creates a new object and the caller takes responsibility for delet
 .. versionadded:: 3.4
 %End
 
-    static QgsProcessingFeatureSource *parameterAsSource( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, QgsProcessingContext &context ) /Factory/;
+    static QgsProcessingFeatureSource *parameterAsSource( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, QgsProcessingContext &context ) /Factory/;
 %Docstring
 Evaluates the parameter with matching ``definition`` to a feature source.
 
@@ -1100,7 +1092,7 @@ This function creates a new object and the caller takes responsibility for delet
 .. versionadded:: 3.4
 %End
 
-    static QString parameterAsCompatibleSourceLayerPath( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters,
+    static QString parameterAsCompatibleSourceLayerPath( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters,
         QgsProcessingContext &context, const QStringList &compatibleFormats, const QString &preferredFormat = QString( "shp" ), QgsProcessingFeedback *feedback = 0 );
 %Docstring
 Evaluates the parameter with matching ``definition`` to a source vector layer file path of compatible format.
@@ -1118,7 +1110,7 @@ When an algorithm is capable of handling multi-layer input files (such as Geopac
 to use :py:func:`~QgsProcessingParameters.parameterAsCompatibleSourceLayerPathAndLayerName` which may avoid conversion in more situations.
 %End
 
-    static QString parameterAsCompatibleSourceLayerPathAndLayerName( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters,
+    static QString parameterAsCompatibleSourceLayerPathAndLayerName( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters,
         QgsProcessingContext &context, const QStringList &compatibleFormats, const QString &preferredFormat = QString( "shp" ), QgsProcessingFeedback *feedback = 0, QString *layerName /Out/ = 0 );
 %Docstring
 Evaluates the parameter with matching ``definition`` to a source vector layer file path and layer name of compatible format.
@@ -1152,7 +1144,7 @@ a conversion in this case and will return the target layer name in the ``layerNa
 .. versionadded:: 3.10
 %End
 
-    static QgsMapLayer *parameterAsLayer( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, QgsProcessingContext &context, QgsProcessingUtils::LayerHint layerHint = QgsProcessingUtils::LayerHint::UnknownType, QgsProcessing::LayerOptionsFlags flags = QgsProcessing::LayerOptionsFlags() );
+    static QgsMapLayer *parameterAsLayer( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, QgsProcessingContext &context, QgsProcessingUtils::LayerHint layerHint = QgsProcessingUtils::LayerHint::UnknownType, QgsProcessing::LayerOptionsFlags flags = QgsProcessing::LayerOptionsFlags() );
 %Docstring
 Evaluates the parameter with matching ``definition`` to a map layer.
 
@@ -1172,7 +1164,7 @@ need to handle deletion of the returned layer.
 .. versionadded:: 3.4
 %End
 
-    static QgsRasterLayer *parameterAsRasterLayer( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, QgsProcessingContext &context );
+    static QgsRasterLayer *parameterAsRasterLayer( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, QgsProcessingContext &context );
 %Docstring
 Evaluates the parameter with matching ``definition`` to a raster layer.
 
@@ -1192,7 +1184,7 @@ need to handle deletion of the returned layer.
 .. versionadded:: 3.4
 %End
 
-    static QString parameterAsOutputLayer( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, QgsProcessingContext &context );
+    static QString parameterAsOutputLayer( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, QgsProcessingContext &context );
 %Docstring
 Evaluates the parameter with matching ``definition`` to a output layer destination.
 %End
@@ -1204,7 +1196,7 @@ Evaluates the parameter with matching ``definition`` and ``value`` to a output l
 .. versionadded:: 3.4
 %End
 
-    static QString parameterAsFileOutput( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, QgsProcessingContext &context );
+    static QString parameterAsFileOutput( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, QgsProcessingContext &context );
 %Docstring
 Evaluates the parameter with matching ``definition`` to a file based output destination.
 %End
@@ -1216,7 +1208,7 @@ Evaluates the parameter with matching ``definition`` and ``value`` to a file bas
 .. versionadded:: 3.4
 %End
 
-    static QgsVectorLayer *parameterAsVectorLayer( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, QgsProcessingContext &context );
+    static QgsVectorLayer *parameterAsVectorLayer( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, QgsProcessingContext &context );
 %Docstring
 Evaluates the parameter with matching ``definition`` to a vector layer.
 
@@ -1236,7 +1228,7 @@ need to handle deletion of the returned layer.
 .. versionadded:: 3.4
 %End
 
-    static QgsMeshLayer *parameterAsMeshLayer( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, QgsProcessingContext &context );
+    static QgsMeshLayer *parameterAsMeshLayer( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, QgsProcessingContext &context );
 %Docstring
 Evaluates the parameter with matching ``definition`` and ``value`` to a mesh layer.
 
@@ -1258,7 +1250,7 @@ need to handle deletion of the returned layer.
 .. versionadded:: 3.6
 %End
 
-    static QgsCoordinateReferenceSystem parameterAsCrs( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, QgsProcessingContext &context );
+    static QgsCoordinateReferenceSystem parameterAsCrs( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, QgsProcessingContext &context );
 %Docstring
 Evaluates the parameter with matching ``definition`` to a coordinate reference system.
 %End
@@ -1270,7 +1262,7 @@ Evaluates the parameter with matching ``definition`` and ``value`` to a coordina
 .. versionadded:: 3.4
 %End
 
-    static QgsRectangle parameterAsExtent( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, QgsProcessingContext &context,
+    static QgsRectangle parameterAsExtent( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, QgsProcessingContext &context,
                                            const QgsCoordinateReferenceSystem &crs = QgsCoordinateReferenceSystem() );
 %Docstring
 Evaluates the parameter with matching ``definition`` to a rectangular extent.
@@ -1298,7 +1290,7 @@ reprojected so that it is in the specified ``crs``. In this case the extent of t
 .. versionadded:: 3.4
 %End
 
-    static QgsGeometry parameterAsExtentGeometry( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, QgsProcessingContext &context,
+    static QgsGeometry parameterAsExtentGeometry( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, QgsProcessingContext &context,
         const QgsCoordinateReferenceSystem &crs = QgsCoordinateReferenceSystem() );
 %Docstring
 Evaluates the parameter with matching ``definition`` to a rectangular extent, and returns a geometry covering this extent.
@@ -1313,7 +1305,7 @@ just the extent of the reprojected rectangle).
 .. seealso:: :py:func:`parameterAsExtentCrs`
 %End
 
-    static QgsCoordinateReferenceSystem parameterAsExtentCrs( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, QgsProcessingContext &context );
+    static QgsCoordinateReferenceSystem parameterAsExtentCrs( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, QgsProcessingContext &context );
 %Docstring
 Returns the coordinate reference system associated with an extent parameter value.
 
@@ -1328,7 +1320,7 @@ Returns the coordinate reference system associated with an extent parameter valu
 %End
 
 
-    static QgsPointXY parameterAsPoint( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, QgsProcessingContext &context,
+    static QgsPointXY parameterAsPoint( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, QgsProcessingContext &context,
                                         const QgsCoordinateReferenceSystem &crs = QgsCoordinateReferenceSystem() );
 %Docstring
 Evaluates the parameter with matching ``definition`` to a point.
@@ -1350,7 +1342,7 @@ If ``crs`` is set then the point will be automatically reprojected so that it is
 .. versionadded:: 3.4
 %End
 
-    static QgsCoordinateReferenceSystem parameterAsPointCrs( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, QgsProcessingContext &context );
+    static QgsCoordinateReferenceSystem parameterAsPointCrs( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, QgsProcessingContext &context );
 %Docstring
 Returns the coordinate reference system associated with an point parameter value.
 
@@ -1366,7 +1358,7 @@ Returns the coordinate reference system associated with an point parameter value
 .. versionadded:: 3.8
 %End
 
-    static QgsGeometry parameterAsGeometry( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, QgsProcessingContext &context, const QgsCoordinateReferenceSystem &crs = QgsCoordinateReferenceSystem() );
+    static QgsGeometry parameterAsGeometry( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, QgsProcessingContext &context, const QgsCoordinateReferenceSystem &crs = QgsCoordinateReferenceSystem() );
 %Docstring
 Evaluates the parameter with matching ``definition`` to a geometry.
 
@@ -1380,7 +1372,7 @@ Evaluates the parameter with matching ``definition`` and ``value`` to a geometry
 .. versionadded:: 3.16
 %End
 
-    static QgsCoordinateReferenceSystem parameterAsGeometryCrs( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, QgsProcessingContext &context );
+    static QgsCoordinateReferenceSystem parameterAsGeometryCrs( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, QgsProcessingContext &context );
 %Docstring
 Returns the coordinate reference system associated with a geometry parameter value.
 
@@ -1398,7 +1390,7 @@ Returns the coordinate reference system associated with an point parameter value
 .. versionadded:: 3.16
 %End
 
-    static QString parameterAsFile( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, QgsProcessingContext &context );
+    static QString parameterAsFile( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, QgsProcessingContext &context );
 %Docstring
 Evaluates the parameter with matching ``definition`` to a file/folder name.
 %End
@@ -1410,7 +1402,7 @@ Evaluates the parameter with matching ``definition`` and ``value`` to a file/fol
 .. versionadded:: 3.4
 %End
 
-    static QVariantList parameterAsMatrix( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, QgsProcessingContext &context );
+    static QVariantList parameterAsMatrix( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, QgsProcessingContext &context );
 %Docstring
 Evaluates the parameter with matching ``definition`` to a matrix/table of values.
 Tables are collapsed to a 1 dimensional list.
@@ -1424,7 +1416,7 @@ Tables are collapsed to a 1 dimensional list.
 .. versionadded:: 3.4
 %End
 
-    static QList< QgsMapLayer *> parameterAsLayerList( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, QgsProcessingContext &context, QgsProcessing::LayerOptionsFlags flags = QgsProcessing::LayerOptionsFlags() );
+    static QList< QgsMapLayer *> parameterAsLayerList( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, QgsProcessingContext &context, QgsProcessing::LayerOptionsFlags flags = QgsProcessing::LayerOptionsFlags() );
 %Docstring
 Evaluates the parameter with matching ``definition`` to a list of map layers.
 The ``flags`` are used to set options for loading layers (e.g. skip index generation).
@@ -1445,14 +1437,14 @@ Evaluates the parameter with matching ``definition`` to a list of files (for :py
 .. versionadded:: 3.10
 %End
 
-    static QStringList parameterAsFileList( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, QgsProcessingContext &context );
+    static QStringList parameterAsFileList( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, QgsProcessingContext &context );
 %Docstring
 Evaluates the parameter with matching ``definition`` to a list of files (for :py:class:`QgsProcessingParameterMultipleLayers` in :py:class:`QgsProcessing`:TypeFile mode).
 
 .. versionadded:: 3.10
 %End
 
-    static QList<double> parameterAsRange( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, QgsProcessingContext &context );
+    static QList<double> parameterAsRange( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, QgsProcessingContext &context );
 %Docstring
 Evaluates the parameter with matching ``definition`` to a range of values.
 %End
@@ -1464,7 +1456,7 @@ Evaluates the parameter with matching ``definition`` and ``value`` to a range of
 .. versionadded:: 3.4
 %End
 
- static QStringList parameterAsFields( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, QgsProcessingContext &context ) /Deprecated/;
+ static QStringList parameterAsFields( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, QgsProcessingContext &context ) /Deprecated/;
 %Docstring
 Evaluates the parameter with matching ``definition`` to a list of fields.
 
@@ -1482,7 +1474,7 @@ Evaluates the parameter with matching ``definition`` and ``value`` to a list of 
    use :py:func:`~QgsProcessingParameters.parameterAsStrings` instead.
 %End
 
-    static QStringList parameterAsStrings( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, QgsProcessingContext &context );
+    static QStringList parameterAsStrings( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, QgsProcessingContext &context );
 %Docstring
 Evaluates the parameter with matching ``definition`` to a list of strings (e.g. field names or point cloud attributes).
 
@@ -1496,7 +1488,7 @@ Evaluates the parameter with matching ``definition`` and ``value`` to a list of 
 .. versionadded:: 3.32
 %End
 
-    static QgsPrintLayout *parameterAsLayout( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, QgsProcessingContext &context );
+    static QgsPrintLayout *parameterAsLayout( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, QgsProcessingContext &context );
 %Docstring
 Evaluates the parameter with matching ``definition`` to a print layout.
 
@@ -1520,7 +1512,7 @@ Evaluates the parameter with matching ``definition`` and ``value`` to a print la
 .. versionadded:: 3.8
 %End
 
-    static QgsLayoutItem *parameterAsLayoutItem( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, QgsProcessingContext &context, QgsPrintLayout *layout );
+    static QgsLayoutItem *parameterAsLayoutItem( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, QgsProcessingContext &context, QgsPrintLayout *layout );
 %Docstring
 Evaluates the parameter with matching ``definition`` to a print layout item, taken from the specified ``layout``.
 
@@ -1544,7 +1536,7 @@ Evaluates the parameter with matching ``definition`` and ``value`` to a print la
 .. versionadded:: 3.8
 %End
 
-    static QColor parameterAsColor( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, QgsProcessingContext &context );
+    static QColor parameterAsColor( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, QgsProcessingContext &context );
 %Docstring
 Returns the color associated with an point parameter value, or an invalid color if the parameter was not set.
 
@@ -1558,7 +1550,7 @@ Returns the color associated with an color parameter value, or an invalid color 
 .. versionadded:: 3.10
 %End
 
-    static QString parameterAsConnectionName( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, const QgsProcessingContext &context );
+    static QString parameterAsConnectionName( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, const QgsProcessingContext &context );
 %Docstring
 Evaluates the parameter with matching ``definition`` to a connection name string.
 
@@ -1572,7 +1564,7 @@ Evaluates the parameter with matching ``definition`` and ``value`` to a connecti
 .. versionadded:: 3.14
 %End
 
-    static QString parameterAsSchema( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, const QgsProcessingContext &context );
+    static QString parameterAsSchema( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, const QgsProcessingContext &context );
 %Docstring
 Evaluates the parameter with matching ``definition`` to a database schema name.
 
@@ -1586,7 +1578,7 @@ Evaluates the parameter with matching ``definition`` and ``value`` to a database
 .. versionadded:: 3.14
 %End
 
-    static QString parameterAsDatabaseTableName( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, const QgsProcessingContext &context );
+    static QString parameterAsDatabaseTableName( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, const QgsProcessingContext &context );
 %Docstring
 Evaluates the parameter with matching ``definition`` to a database table name.
 
@@ -1600,7 +1592,7 @@ Evaluates the parameter with matching ``definition`` and ``value`` to a database
 .. versionadded:: 3.14
 %End
 
-    static QgsPointCloudLayer *parameterAsPointCloudLayer( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, QgsProcessingContext &context, QgsProcessing::LayerOptionsFlags flags = QgsProcessing::LayerOptionsFlags() );
+    static QgsPointCloudLayer *parameterAsPointCloudLayer( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, QgsProcessingContext &context, QgsProcessing::LayerOptionsFlags flags = QgsProcessing::LayerOptionsFlags() );
 %Docstring
 Evaluates the parameter with matching ``definition`` to a point cloud layer.
 The ``flags`` are used to set options for loading layer (e.g. skip index generation).
@@ -1624,7 +1616,7 @@ need to handle deletion of the returned layer.
 .. versionadded:: 3.22
 %End
 
-    static QgsAnnotationLayer *parameterAsAnnotationLayer( const QgsProcessingParameterDefinition *definition, const QMap<QString, QVariant> &parameters, QgsProcessingContext &context );
+    static QgsAnnotationLayer *parameterAsAnnotationLayer( const QgsProcessingParameterDefinition *definition, const QVariantMap &parameters, QgsProcessingContext &context );
 %Docstring
 Evaluates the parameter with matching ``definition`` to an annotation layer.
 
@@ -1658,7 +1650,7 @@ need to handle deletion of the returned layer.
 .. versionadded:: 3.22
 %End
 
-    static QgsProcessingParameterDefinition *parameterFromVariantMap( const QMap<QString, QVariant> &map ) /Factory/;
+    static QgsProcessingParameterDefinition *parameterFromVariantMap( const QVariantMap &map ) /Factory/;
 %Docstring
 Creates a new :py:class:`QgsProcessingParameterDefinition` using the configuration from a
 supplied variant ``map``.
@@ -1685,8 +1677,6 @@ class QgsProcessingParameterBoolean : QgsProcessingParameterDefinition
 {
 %Docstring(signature="appended")
 A boolean parameter for processing algorithms.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -1722,8 +1712,6 @@ class QgsProcessingParameterCrs : QgsProcessingParameterDefinition
 {
 %Docstring(signature="appended")
 A coordinate reference system parameter for processing algorithms.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -1764,8 +1752,6 @@ class QgsProcessingParameterExtent : QgsProcessingParameterDefinition
 {
 %Docstring(signature="appended")
 A rectangular map extent parameter for processing algorithms.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -1807,8 +1793,6 @@ class QgsProcessingParameterPoint : QgsProcessingParameterDefinition
 {
 %Docstring(signature="appended")
 A point parameter for processing algorithms.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -1878,9 +1862,9 @@ Returns the type name for the parameter class.
 
     virtual QString asPythonString( QgsProcessing::PythonOutputType outputType = QgsProcessing::PythonOutputType::PythonQgsProcessingAlgorithmSubclass ) const;
 
-    virtual QMap<QString, QVariant> toVariantMap() const;
+    virtual QVariantMap toVariantMap() const;
 
-    virtual bool fromVariantMap( const QMap<QString, QVariant> &map );
+    virtual bool fromVariantMap( const QVariantMap &map );
 
 
     QList<int>  geometryTypes() const;
@@ -1924,8 +1908,6 @@ class QgsProcessingParameterFile : QgsProcessingParameterDefinition, QgsFileFilt
 {
 %Docstring(signature="appended")
 An input file or folder parameter for processing algorithms.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -2021,9 +2003,9 @@ Calling this method resets any existing :py:func:`~QgsProcessingParameterFile.ex
 .. versionadded:: 3.10
 %End
 
-    virtual QMap<QString, QVariant> toVariantMap() const;
+    virtual QVariantMap toVariantMap() const;
 
-    virtual bool fromVariantMap( const QMap<QString, QVariant> &map );
+    virtual bool fromVariantMap( const QVariantMap &map );
 
 
     static QgsProcessingParameterFile *fromScriptCode( const QString &name, const QString &description, bool isOptional, const QString &definition, Qgis::ProcessingFileParameterBehavior behavior = Qgis::ProcessingFileParameterBehavior::File ) /Factory/;
@@ -2037,8 +2019,6 @@ class QgsProcessingParameterMatrix : QgsProcessingParameterDefinition
 {
 %Docstring(signature="appended")
 A table (matrix) parameter for processing algorithms.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -2120,9 +2100,9 @@ Sets whether the table has a fixed number of rows.
 .. seealso:: :py:func:`hasFixedNumberRows`
 %End
 
-    virtual QMap<QString, QVariant> toVariantMap() const;
+    virtual QVariantMap toVariantMap() const;
 
-    virtual bool fromVariantMap( const QMap<QString, QVariant> &map );
+    virtual bool fromVariantMap( const QVariantMap &map );
 
 
     static QgsProcessingParameterMatrix *fromScriptCode( const QString &name, const QString &description, bool isOptional, const QString &definition ) /Factory/;
@@ -2136,8 +2116,6 @@ class QgsProcessingParameterMultipleLayers : QgsProcessingParameterDefinition, Q
 {
 %Docstring(signature="appended")
 A parameter for processing algorithms which accepts multiple map layers.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -2204,9 +2182,9 @@ if the parameter is not optional.
 .. seealso:: :py:func:`minimumNumberInputs`
 %End
 
-    virtual QMap<QString, QVariant> toVariantMap() const;
+    virtual QVariantMap toVariantMap() const;
 
-    virtual bool fromVariantMap( const QMap<QString, QVariant> &map );
+    virtual bool fromVariantMap( const QVariantMap &map );
 
 
     static QgsProcessingParameterMultipleLayers *fromScriptCode( const QString &name, const QString &description, bool isOptional, const QString &definition ) /Factory/;
@@ -2231,8 +2209,6 @@ shown in the parameter's widget can be specified by setting the parameter's meta
        param.setMetadata( {'widget_wrapper':
          { 'decimals': 2 }
        })
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -2309,9 +2285,9 @@ Sets the acceptable data ``type`` for the parameter.
 .. seealso:: :py:func:`dataType`
 %End
 
-    virtual QMap<QString, QVariant> toVariantMap() const;
+    virtual QVariantMap toVariantMap() const;
 
-    virtual bool fromVariantMap( const QMap<QString, QVariant> &map );
+    virtual bool fromVariantMap( const QVariantMap &map );
 
 
     static QgsProcessingParameterNumber *fromScriptCode( const QString &name, const QString &description, bool isOptional, const QString &definition ) /Factory/;
@@ -2403,9 +2379,9 @@ Sets the default distance ``unit`` for the parameter.
 .. versionadded:: 3.4.3
 %End
 
-    virtual QMap<QString, QVariant> toVariantMap() const;
+    virtual QVariantMap toVariantMap() const;
 
-    virtual bool fromVariantMap( const QMap<QString, QVariant> &map );
+    virtual bool fromVariantMap( const QVariantMap &map );
 
 
 };
@@ -2460,9 +2436,9 @@ Sets the default duration ``unit`` for the parameter.
 .. seealso:: :py:func:`defaultUnit`
 %End
 
-    virtual QMap<QString, QVariant> toVariantMap() const;
+    virtual QVariantMap toVariantMap() const;
 
-    virtual bool fromVariantMap( const QMap<QString, QVariant> &map );
+    virtual bool fromVariantMap( const QVariantMap &map );
 
 
 };
@@ -2514,8 +2490,6 @@ class QgsProcessingParameterRange : QgsProcessingParameterDefinition
 {
 %Docstring(signature="appended")
 A numeric range parameter for processing algorithms.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -2559,9 +2533,9 @@ Sets the acceptable data ``type`` for the range.
 .. seealso:: :py:func:`dataType`
 %End
 
-    virtual QMap<QString, QVariant> toVariantMap() const;
+    virtual QVariantMap toVariantMap() const;
 
-    virtual bool fromVariantMap( const QMap<QString, QVariant> &map );
+    virtual bool fromVariantMap( const QVariantMap &map );
 
 
     static QgsProcessingParameterRange *fromScriptCode( const QString &name, const QString &description, bool isOptional, const QString &definition ) /Factory/;
@@ -2575,8 +2549,6 @@ class QgsProcessingParameterRasterLayer : QgsProcessingParameterDefinition, QgsF
 {
 %Docstring(signature="appended")
 A raster layer parameter for processing algorithms.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -2630,8 +2602,6 @@ set to a list of QIcon values.
        param.setMetadata( {'widget_wrapper':
          { 'icons': [QIcon('integer.svg'), QIcon('string.svg')] }
        })
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -2714,9 +2684,9 @@ values for its enumeration choice list.
 .. versionadded:: 3.18
 %End
 
-    virtual QMap<QString, QVariant> toVariantMap() const;
+    virtual QVariantMap toVariantMap() const;
 
-    virtual bool fromVariantMap( const QMap<QString, QVariant> &map );
+    virtual bool fromVariantMap( const QVariantMap &map );
 
 
     static QgsProcessingParameterEnum *fromScriptCode( const QString &name, const QString &description, bool isOptional, const QString &definition ) /Factory/;
@@ -2750,8 +2720,6 @@ means. Algorithms should gracefully handle other values accordingly.)
        param.setMetadata( {'widget_wrapper':
          { 'value_hints': ['Inkjet printer', 'Laser printer'] }
        })
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -2794,9 +2762,9 @@ Sets whether the parameter allows multiline strings.
 .. seealso:: :py:func:`multiLine`
 %End
 
-    virtual QMap<QString, QVariant> toVariantMap() const;
+    virtual QVariantMap toVariantMap() const;
 
-    virtual bool fromVariantMap( const QMap<QString, QVariant> &map );
+    virtual bool fromVariantMap( const QVariantMap &map );
 
 
     static QgsProcessingParameterString *fromScriptCode( const QString &name, const QString &description, bool isOptional, const QString &definition ) /Factory/;
@@ -2854,8 +2822,6 @@ class QgsProcessingParameterExpression : QgsProcessingParameterDefinition
 {
 %Docstring(signature="appended")
 An expression parameter for processing algorithms.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -2916,9 +2882,9 @@ Sets the parameter's expression ``type``.
 .. versionadded:: 3.32
 %End
 
-    virtual QMap<QString, QVariant> toVariantMap() const;
+    virtual QVariantMap toVariantMap() const;
 
-    virtual bool fromVariantMap( const QMap<QString, QVariant> &map );
+    virtual bool fromVariantMap( const QVariantMap &map );
 
 
     static QgsProcessingParameterExpression *fromScriptCode( const QString &name, const QString &description, bool isOptional, const QString &definition ) /Factory/;
@@ -2933,8 +2899,6 @@ class QgsProcessingParameterLimitedDataTypes
 {
 %Docstring(signature="appended")
 Can be inherited by parameters which require limits to their acceptable data types.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -2970,8 +2934,6 @@ class QgsProcessingParameterVectorLayer : QgsProcessingParameterDefinition, QgsP
 %Docstring(signature="appended")
 A vector layer (with or without geometry) parameter for processing algorithms. Consider using
 the more versatile :py:class:`QgsProcessingParameterFeatureSource` wherever possible.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -3008,9 +2970,9 @@ Returns the type name for the parameter class.
     virtual QString createFileFilter() const;
 
 
-    virtual QMap<QString, QVariant> toVariantMap() const;
+    virtual QVariantMap toVariantMap() const;
 
-    virtual bool fromVariantMap( const QMap<QString, QVariant> &map );
+    virtual bool fromVariantMap( const QVariantMap &map );
 
 
     static QgsProcessingParameterVectorLayer *fromScriptCode( const QString &name, const QString &description, bool isOptional, const QString &definition ) /Factory/;
@@ -3069,8 +3031,6 @@ class QgsProcessingParameterMapLayer : QgsProcessingParameterDefinition, QgsProc
 {
 %Docstring(signature="appended")
 A map layer parameter for processing algorithms.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -3107,9 +3067,9 @@ Returns the type name for the parameter class.
     virtual QString createFileFilter() const;
 
 
-    virtual QMap<QString, QVariant> toVariantMap() const;
+    virtual QVariantMap toVariantMap() const;
 
-    virtual bool fromVariantMap( const QMap<QString, QVariant> &map );
+    virtual bool fromVariantMap( const QVariantMap &map );
 
 
     static QgsProcessingParameterMapLayer *fromScriptCode( const QString &name, const QString &description, bool isOptional, const QString &definition ) /Factory/;
@@ -3123,8 +3083,6 @@ class QgsProcessingParameterField : QgsProcessingParameterDefinition
 {
 %Docstring(signature="appended")
 A vector layer or feature source field parameter for processing algorithms.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -3226,9 +3184,9 @@ If ``True``, this will override any existing :py:func:`~QgsProcessingParameterFi
 .. versionadded:: 3.12
 %End
 
-    virtual QMap<QString, QVariant> toVariantMap() const;
+    virtual QVariantMap toVariantMap() const;
 
-    virtual bool fromVariantMap( const QMap<QString, QVariant> &map );
+    virtual bool fromVariantMap( const QVariantMap &map );
 
 
     static QgsProcessingParameterField *fromScriptCode( const QString &name, const QString &description, bool isOptional, const QString &definition ) /Factory/;
@@ -3243,8 +3201,6 @@ class QgsProcessingParameterFeatureSource : QgsProcessingParameterDefinition, Qg
 {
 %Docstring(signature="appended")
 An input feature source (such as vector layers) parameter for processing algorithms.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -3281,9 +3237,9 @@ Returns the type name for the parameter class.
     virtual QString createFileFilter() const;
 
 
-    virtual QMap<QString, QVariant> toVariantMap() const;
+    virtual QVariantMap toVariantMap() const;
 
-    virtual bool fromVariantMap( const QMap<QString, QVariant> &map );
+    virtual bool fromVariantMap( const QVariantMap &map );
 
 
     static QgsProcessingParameterFeatureSource *fromScriptCode( const QString &name, const QString &description, bool isOptional, const QString &definition ) /Factory/;
@@ -3298,8 +3254,6 @@ class QgsProcessingDestinationParameter : QgsProcessingParameterDefinition, QgsF
 %Docstring(signature="appended")
 Base class for all parameter definitions which represent file or layer destinations, e.g. parameters
 which are used for the destination for layers output by an algorithm.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -3317,9 +3271,9 @@ output will not be created by default.
 %End
 
     virtual bool isDestination() const;
-    virtual QMap<QString, QVariant> toVariantMap() const;
+    virtual QVariantMap toVariantMap() const;
 
-    virtual bool fromVariantMap( const QMap<QString, QVariant> &map );
+    virtual bool fromVariantMap( const QVariantMap &map );
 
     virtual QString asPythonString( QgsProcessing::PythonOutputType outputType = QgsProcessing::PythonOutputType::PythonQgsProcessingAlgorithmSubclass ) const;
 
@@ -3416,8 +3370,6 @@ class QgsProcessingParameterFeatureSink : QgsProcessingDestinationParameter
 A feature sink output for processing algorithms.
 
 A parameter which represents the destination feature sink for features created by an algorithm.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -3509,9 +3461,9 @@ Sets whether the sink supports appending features to an existing table.
 .. versionadded:: 3.14
 %End
 
-    virtual QMap<QString, QVariant> toVariantMap() const;
+    virtual QVariantMap toVariantMap() const;
 
-    virtual bool fromVariantMap( const QMap<QString, QVariant> &map );
+    virtual bool fromVariantMap( const QVariantMap &map );
 
     virtual QString generateTemporaryDestination( const QgsProcessingContext *context = 0 ) const;
 
@@ -3534,8 +3486,6 @@ created by the algorithm.
 
    Consider using the more flexible QgsProcessingParameterFeatureSink wherever
    possible.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -3603,9 +3553,9 @@ Sets the layer ``type`` for the created vector layer.
 .. seealso:: :py:func:`dataType`
 %End
 
-    virtual QMap<QString, QVariant> toVariantMap() const;
+    virtual QVariantMap toVariantMap() const;
 
-    virtual bool fromVariantMap( const QMap<QString, QVariant> &map );
+    virtual bool fromVariantMap( const QVariantMap &map );
 
 
     static QgsProcessingParameterVectorDestination *fromScriptCode( const QString &name, const QString &description, bool isOptional, const QString &definition ) /Factory/;
@@ -3621,8 +3571,6 @@ class QgsProcessingParameterRasterDestination : QgsProcessingDestinationParamete
 %Docstring(signature="appended")
 A raster layer destination parameter, for specifying the destination path for a raster layer
 created by the algorithm.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -3692,8 +3640,6 @@ the widget wrapper metadata "dontconfirmoverwrite" option:
        param.setMetadata( {'widget_wrapper':
          { 'dontconfirmoverwrite': True }
        })
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -3747,9 +3693,9 @@ Sets the file ``filter`` string for file destinations compatible with this param
 .. seealso:: :py:func:`fileFilter`
 %End
 
-    virtual QMap<QString, QVariant> toVariantMap() const;
+    virtual QVariantMap toVariantMap() const;
 
-    virtual bool fromVariantMap( const QMap<QString, QVariant> &map );
+    virtual bool fromVariantMap( const QVariantMap &map );
 
 
     static QgsProcessingParameterFileDestination *fromScriptCode( const QString &name, const QString &description, bool isOptional, const QString &definition ) /Factory/;
@@ -3765,8 +3711,6 @@ class QgsProcessingParameterFolderDestination : QgsProcessingDestinationParamete
 %Docstring(signature="appended")
 A folder destination parameter, for specifying the destination path for a folder created
 by the algorithm or used for creating new files within the algorithm.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -3807,8 +3751,6 @@ class QgsProcessingParameterBand : QgsProcessingParameterDefinition
 {
 %Docstring(signature="appended")
 A raster band parameter for Processing algorithms.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -3856,9 +3798,9 @@ Sets the name of the parent layer parameter. Use an empty string if this is not 
 .. seealso:: :py:func:`parentLayerParameterName`
 %End
 
-    virtual QMap<QString, QVariant> toVariantMap() const;
+    virtual QVariantMap toVariantMap() const;
 
-    virtual bool fromVariantMap( const QMap<QString, QVariant> &map );
+    virtual bool fromVariantMap( const QVariantMap &map );
 
 
     static QgsProcessingParameterBand *fromScriptCode( const QString &name, const QString &description, bool isOptional, const QString &definition ) /Factory/;
@@ -3968,9 +3910,9 @@ Returns the type name for the parameter class.
 
     virtual QString asPythonString( QgsProcessing::PythonOutputType outputType = QgsProcessing::PythonOutputType::PythonQgsProcessingAlgorithmSubclass ) const;
 
-    virtual QMap<QString, QVariant> toVariantMap() const;
+    virtual QVariantMap toVariantMap() const;
 
-    virtual bool fromVariantMap( const QMap<QString, QVariant> &map );
+    virtual bool fromVariantMap( const QVariantMap &map );
 
     virtual QStringList dependsOnOtherParameters() const;
 
@@ -4053,9 +3995,9 @@ Returns the type name for the parameter class.
 
     virtual bool checkValueIsAcceptable( const QVariant &input, QgsProcessingContext *context = 0 ) const;
 
-    virtual QMap<QString, QVariant> toVariantMap() const;
+    virtual QVariantMap toVariantMap() const;
 
-    virtual bool fromVariantMap( const QMap<QString, QVariant> &map );
+    virtual bool fromVariantMap( const QVariantMap &map );
 
 
     bool opacityEnabled() const;
@@ -4124,9 +4066,9 @@ Returns the type name for the parameter class.
     virtual QStringList dependsOnOtherParameters() const;
 
 
-    virtual QMap<QString, QVariant> toVariantMap() const;
+    virtual QVariantMap toVariantMap() const;
 
-    virtual bool fromVariantMap( const QMap<QString, QVariant> &map );
+    virtual bool fromVariantMap( const QVariantMap &map );
 
 
     static QgsProcessingParameterCoordinateOperation *fromScriptCode( const QString &name, const QString &description, bool isOptional, const QString &definition ) /Factory/;
@@ -4245,9 +4187,9 @@ Returns the type name for the parameter class.
 
     virtual QString asPythonString( QgsProcessing::PythonOutputType outputType = QgsProcessing::PythonOutputType::PythonQgsProcessingAlgorithmSubclass ) const;
 
-    virtual QMap<QString, QVariant> toVariantMap() const;
+    virtual QVariantMap toVariantMap() const;
 
-    virtual bool fromVariantMap( const QMap<QString, QVariant> &map );
+    virtual bool fromVariantMap( const QVariantMap &map );
 
 
     static QgsProcessingParameterMapTheme *fromScriptCode( const QString &name, const QString &description, bool isOptional, const QString &definition ) /Factory/;
@@ -4359,9 +4301,9 @@ Sets the acceptable data ``type`` for the parameter.
 .. seealso:: :py:func:`dataType`
 %End
 
-    virtual QMap<QString, QVariant> toVariantMap() const;
+    virtual QVariantMap toVariantMap() const;
 
-    virtual bool fromVariantMap( const QMap<QString, QVariant> &map );
+    virtual bool fromVariantMap( const QVariantMap &map );
 
 
     static QgsProcessingParameterDateTime *fromScriptCode( const QString &name, const QString &description, bool isOptional, const QString &definition ) /Factory/;
@@ -4414,9 +4356,9 @@ Returns the type name for the parameter class.
 
     virtual QString asPythonString( QgsProcessing::PythonOutputType outputType = QgsProcessing::PythonOutputType::PythonQgsProcessingAlgorithmSubclass ) const;
 
-    virtual QMap<QString, QVariant> toVariantMap() const;
+    virtual QVariantMap toVariantMap() const;
 
-    virtual bool fromVariantMap( const QMap<QString, QVariant> &map );
+    virtual bool fromVariantMap( const QVariantMap &map );
 
 
     QString providerId() const;
@@ -4485,9 +4427,9 @@ Returns the type name for the parameter class.
 
     virtual QString asPythonString( QgsProcessing::PythonOutputType outputType = QgsProcessing::PythonOutputType::PythonQgsProcessingAlgorithmSubclass ) const;
 
-    virtual QMap<QString, QVariant> toVariantMap() const;
+    virtual QVariantMap toVariantMap() const;
 
-    virtual bool fromVariantMap( const QMap<QString, QVariant> &map );
+    virtual bool fromVariantMap( const QVariantMap &map );
 
     virtual QStringList dependsOnOtherParameters() const;
 
@@ -4563,9 +4505,9 @@ Returns the type name for the parameter class.
 
     virtual QString asPythonString( QgsProcessing::PythonOutputType outputType = QgsProcessing::PythonOutputType::PythonQgsProcessingAlgorithmSubclass ) const;
 
-    virtual QMap<QString, QVariant> toVariantMap() const;
+    virtual QVariantMap toVariantMap() const;
 
-    virtual bool fromVariantMap( const QMap<QString, QVariant> &map );
+    virtual bool fromVariantMap( const QVariantMap &map );
 
     virtual QStringList dependsOnOtherParameters() const;
 
@@ -4851,9 +4793,9 @@ If ``True``, this will override any existing :py:func:`~QgsProcessingParameterPo
 .. seealso:: :py:func:`defaultToAllAttributes`
 %End
 
-    virtual QMap<QString, QVariant> toVariantMap() const;
+    virtual QVariantMap toVariantMap() const;
 
-    virtual bool fromVariantMap( const QMap<QString, QVariant> &map );
+    virtual bool fromVariantMap( const QVariantMap &map );
 
 
     static QgsProcessingParameterPointCloudAttribute *fromScriptCode( const QString &name, const QString &description, bool isOptional, const QString &definition ) /Factory/;

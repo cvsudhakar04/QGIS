@@ -21,6 +21,7 @@
 #include "qgscodeeditorcolorscheme.h"
 #include "qgis.h"
 #include "qgssettingstree.h"
+#include "qgspanelwidget.h"
 
 // qscintilla includes
 #include <Qsci/qsciapis.h>
@@ -29,6 +30,9 @@
 
 #include <QMap>
 
+class QgsFilterLineEdit;
+class QToolButton;
+class QCheckBox;
 
 SIP_IF_MODULE( HAVE_QSCI_SIP )
 
@@ -81,14 +85,17 @@ class GUI_EXPORT QgsCodeInterpreter
 };
 
 
-
-class QWidget;
+// TODO QGIS 4.0 -- Consider making QgsCodeEditor inherit QWidget only,
+// with a separate getter for the QsciScintilla child widget. This
+// would give us more flexibility to add functionality to the base
+// QgsCodeEditor class, eg adding a message bar or other child widgets
+// to the editor widget. For now this extra functionality lives in
+// the QgsCodeEditorWidget wrapper widget.
 
 /**
  * \ingroup gui
  * \brief A text editor based on QScintilla2.
  * \note may not be available in Python bindings, depending on platform support
- * \since QGIS 2.6
  */
 class GUI_EXPORT QgsCodeEditor : public QsciScintilla
 {
@@ -151,6 +158,9 @@ class GUI_EXPORT QgsCodeEditor : public QsciScintilla
     Q_DECLARE_FLAGS( Flags, Flag )
     Q_FLAG( Flags )
 
+    //! Indicator index for search results
+    static constexpr int SEARCH_RESULT_INDICATOR = QsciScintilla::INDIC_MAX - 1;
+
     /**
      * Construct a new code editor.
      *
@@ -160,7 +170,6 @@ class GUI_EXPORT QgsCodeEditor : public QsciScintilla
      * \param margin FALSE: Enable margin for code editor (deprecated)
      * \param flags flags controlling behavior of code editor (since QGIS 3.28)
      * \param mode code editor mode (since QGIS 3.30)
-     * \since QGIS 2.6
      */
     QgsCodeEditor( QWidget *parent SIP_TRANSFERTHIS = nullptr, const QString &title = QString(), bool folding = false, bool margin = false, QgsCodeEditor::Flags flags = QgsCodeEditor::Flags(), QgsCodeEditor::Mode mode = QgsCodeEditor::Mode::ScriptEditor );
 

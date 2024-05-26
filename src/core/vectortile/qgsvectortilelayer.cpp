@@ -23,6 +23,7 @@
 #include "qgsvectortileloader.h"
 #include "qgsvectortileutils.h"
 #include "qgsnetworkaccessmanager.h"
+#include "qgssetrequestinitiator_p.h"
 #include "qgsdatasourceuri.h"
 #include "qgslayermetadataformatter.h"
 #include "qgsblockingnetworkrequest.h"
@@ -126,6 +127,7 @@ QgsVectorTileLayer *QgsVectorTileLayer::clone() const
   const QgsVectorTileLayer::LayerOptions options( mTransformContext );
   QgsVectorTileLayer *layer = new QgsVectorTileLayer( source(), name(), options );
   layer->setRenderer( renderer() ? renderer()->clone() : nullptr );
+  layer->setLabeling( labeling() ? labeling()->clone() : nullptr );
   return layer;
 }
 

@@ -163,6 +163,18 @@ class PyQgsTextRenderer(QgisTestCase):
         self.assertTrue(t.isValid())
 
         t = QgsTextFormat()
+        t.setTabStopDistance(3)
+        self.assertTrue(t.isValid())
+
+        t = QgsTextFormat()
+        t.setTabStopDistanceUnit(Qgis.RenderUnit.Points)
+        self.assertTrue(t.isValid())
+
+        t = QgsTextFormat()
+        t.setTabStopDistanceMapUnitScale(QgsMapUnitScale(5, 10))
+        self.assertTrue(t.isValid())
+
+        t = QgsTextFormat()
         t.setOrientation(QgsTextFormat.TextOrientation.VerticalOrientation)
         self.assertTrue(t.isValid())
 
@@ -743,6 +755,10 @@ class PyQgsTextRenderer(QgisTestCase):
         s.setForcedBold(True)
         s.setForcedItalic(True)
 
+        s.setTabStopDistance(4.5)
+        s.setTabStopDistanceUnit(Qgis.RenderUnit.RenderInches)
+        s.setTabStopDistanceMapUnitScale(QgsMapUnitScale(11, 12))
+
         s.setStretchFactor(110)
 
         s.dataDefinedProperties().setProperty(QgsPalLayerSettings.Property.Bold, QgsProperty.fromExpression('1>2'))
@@ -862,6 +878,19 @@ class PyQgsTextRenderer(QgisTestCase):
         s.setStretchFactor(120)
         self.assertNotEqual(s, s2)
 
+        s = self.createFormatSettings()
+        s.setTabStopDistance(120)
+        self.assertNotEqual(s, s2)
+
+        s = self.createFormatSettings()
+        s.setTabStopDistanceUnit(Qgis.RenderUnit.Points)
+        self.assertNotEqual(s, s2)
+
+        s = self.createFormatSettings()
+        s.setTabStopDistanceMapUnitScale(
+            QgsMapUnitScale(111, 122))
+        self.assertNotEqual(s, s2)
+
     def checkTextFormat(self, s):
         """ test QgsTextFormat """
         self.assertTrue(s.buffer().enabled())
@@ -891,6 +920,9 @@ class PyQgsTextRenderer(QgisTestCase):
         self.assertEqual(s.dataDefinedProperties().property(QgsPalLayerSettings.Property.Bold).expressionString(), '1>2')
         self.assertTrue(s.forcedBold())
         self.assertTrue(s.forcedItalic())
+        self.assertEqual(s.tabStopDistance(), 4.5)
+        self.assertEqual(s.tabStopDistanceUnit(), Qgis.RenderUnit.Inches)
+        self.assertEqual(s.tabStopDistanceMapUnitScale(), QgsMapUnitScale(11, 12))
 
         if int(QT_VERSION_STR.split('.')[0]) > 6 or (
                 int(QT_VERSION_STR.split('.')[0]) == 6 and int(QT_VERSION_STR.split('.')[1]) >= 3):
@@ -1381,6 +1413,10 @@ class PyQgsTextRenderer(QgisTestCase):
             f.updateDataDefinedProperties(context)
             self.assertEqual(f.stretchFactor(), 135)
 
+        f.dataDefinedProperties().setProperty(QgsPalLayerSettings.Property.TabStopDistance, QgsProperty.fromExpression("15"))
+        f.updateDataDefinedProperties(context)
+        self.assertEqual(f.tabStopDistance(), 15)
+
     def testFontFoundFromLayer(self):
         layer = createEmptyLayer()
         layer.setCustomProperty('labeling/fontFamily', 'asdasd')
@@ -1563,7 +1599,9 @@ class PyQgsTextRenderer(QgisTestCase):
     def checkRenderPoint(self, format, name, part=None, angle=0, alignment=QgsTextRenderer.HAlignment.AlignLeft,
                          text=['test'],
                          point=QPointF(100, 200),
-                         image_size=400):
+                         image_size=400,
+                         enable_scale_workaround=False,
+                         render_mask=False):
         image = QImage(image_size, image_size, QImage.Format.Format_RGB32)
 
         painter = QPainter()
@@ -1573,6 +1611,10 @@ class PyQgsTextRenderer(QgisTestCase):
         context = QgsRenderContext.fromMapSettings(ms)
         context.setPainter(painter)
         context.setScaleFactor(96 / 25.4)  # 96 DPI
+        if render_mask:
+            context.setIsGuiPreview(True)
+
+        context.setFlag(QgsRenderContext.Flag.ApplyScalingWorkaroundForTextRendering, enable_scale_workaround)
 
         painter.begin(image)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -3360,6 +3402,28 @@ class PyQgsTextRenderer(QgisTestCase):
         format.buffer().setSize(5)
         assert self.checkRenderPoint(format, 'text_dd_buffer_color', None, text=['test'], point=QPointF(50, 200))
 
+    def testDrawTabPercent(self):
+        format = QgsTextFormat()
+        format.setFont(getTestFont('bold'))
+        format.setSize(20)
+        format.setSizeUnit(QgsUnitTypes.RenderUnit.RenderPoints)
+        format.setTabStopDistance(4)
+        format.setTabStopDistanceUnit(Qgis.RenderUnit.Percentage)
+        self.assertTrue(self.checkRender(format,
+                                         'text_tab_percentage',
+                                         text=['with\ttabs', 'a\tb']))
+
+    def testDrawTabFixedSize(self):
+        format = QgsTextFormat()
+        format.setFont(getTestFont('bold'))
+        format.setSize(20)
+        format.setSizeUnit(QgsUnitTypes.RenderUnit.RenderPoints)
+        format.setTabStopDistance(40)
+        format.setTabStopDistanceUnit(Qgis.RenderUnit.Millimeters)
+        self.assertTrue(self.checkRender(format,
+                                         'text_tab_fixed_size',
+                                         text=['with\ttabs', 'a\tb']))
+
     def testHtmlFormatting(self):
         format = QgsTextFormat()
         format.setFont(getTestFont('bold'))
@@ -3371,7 +3435,34 @@ class PyQgsTextRenderer(QgisTestCase):
             '<s>t</s><span style="text-decoration: overline">e</span><span style="color: red">s<span style="color: rgba(255,0,0,0.5); text-decoration: underline">t</span></span>'],
             point=QPointF(50, 200))
 
+    def testHtmlTabPercent(self):
+        format = QgsTextFormat()
+        format.setFont(getTestFont('bold'))
+        format.setSize(20)
+        format.setSizeUnit(QgsUnitTypes.RenderUnit.RenderPoints)
+        format.setTabStopDistance(4)
+        format.setTabStopDistanceUnit(Qgis.RenderUnit.Percentage)
+        format.setAllowHtmlFormatting(True)
+        self.assertTrue(self.checkRender(format,
+                                         'text_tab_percentage_html',
+                                         text=['<span style="font-size: 15pt">with</span>\ttabs', ' a\tb']))
+
+    def testHtmlTabFixedSize(self):
+        format = QgsTextFormat()
+        format.setFont(getTestFont('bold'))
+        format.setSize(20)
+        format.setSizeUnit(QgsUnitTypes.RenderUnit.RenderPoints)
+        format.setTabStopDistance(40)
+        format.setTabStopDistanceUnit(Qgis.RenderUnit.Millimeters)
+        format.setAllowHtmlFormatting(True)
+        self.assertTrue(self.checkRender(format,
+                                         'text_tab_fixed_size_html',
+                                         text=['<span style="font-size: 15pt">with</span>\ttabs', ' a\tb']))
+
     def testHtmlFormattingBuffer(self):
+        """
+        Test drawing HTML with buffer
+        """
         format = QgsTextFormat()
         format.setFont(getTestFont('bold'))
         format.setSize(60)
@@ -3384,6 +3475,57 @@ class PyQgsTextRenderer(QgisTestCase):
         assert self.checkRenderPoint(format, 'text_html_formatting_buffer', None, text=[
             '<s>t</s><span style="text-decoration: overline">e</span><span style="color: red">s<span style="text-decoration: underline">t</span></span>'],
             point=QPointF(50, 200))
+
+    def testHtmlFormattingBufferScaleFactor(self):
+        """
+        Test drawing HTML with scale factor workaround
+        """
+        format = QgsTextFormat()
+        format.setFont(getTestFont('bold'))
+        # font sizes < 50 pixel trigger the scale factor workaround
+        format.setSize(49)
+        format.setSizeUnit(QgsUnitTypes.RenderUnit.RenderPixels)
+        format.setColor(QColor(0, 255, 0))
+        format.setAllowHtmlFormatting(True)
+        format.buffer().setEnabled(True)
+        format.buffer().setSize(5)
+        format.buffer().setColor(QColor(50, 150, 200))
+        assert self.checkRenderPoint(format, 'text_html_formatting_buffer_scale_workaround', None, text=[
+            't <span style="font-size:60pt">e</span> <span style="color: red">s</span>'],
+            point=QPointF(50, 200), enable_scale_workaround=True)
+
+    def testHtmlFormattingMask(self):
+        """
+        Test drawing HTML with mask
+        """
+        format = QgsTextFormat()
+        format.setFont(getTestFont('bold'))
+        format.setSize(60)
+        format.setSizeUnit(QgsUnitTypes.RenderUnit.RenderPoints)
+        format.setColor(QColor(0, 255, 0))
+        format.setAllowHtmlFormatting(True)
+        format.mask().setEnabled(True)
+        format.mask().setSize(5)
+        assert self.checkRenderPoint(format, 'text_html_formatting_mask', None, text=[
+            't <span style="font-size:60pt">e</span> <span style="color: red">s</span>'],
+            point=QPointF(50, 200), render_mask=True)
+
+    def testHtmlFormattingMaskScaleFactor(self):
+        """
+        Test drawing HTML with mask with scale factor workaround
+        """
+        format = QgsTextFormat()
+        format.setFont(getTestFont('bold'))
+        # font sizes < 50 pixel trigger the scale factor workaround
+        format.setSize(49)
+        format.setSizeUnit(QgsUnitTypes.RenderUnit.RenderPixels)
+        format.setColor(QColor(0, 255, 0))
+        format.setAllowHtmlFormatting(True)
+        format.mask().setEnabled(True)
+        format.mask().setSize(5)
+        assert self.checkRenderPoint(format, 'text_html_formatting_mask_scale_workaround', None, text=[
+            't <span style="font-size:60pt">e</span> <span style="color: red">s</span>'],
+            point=QPointF(50, 200), render_mask=True, enable_scale_workaround=True)
 
     def testHtmlFormattingShadow(self):
         format = QgsTextFormat()

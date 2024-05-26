@@ -41,8 +41,6 @@ Only call this once on startup of an application.
 .. note::
 
    Not required for plugins, the QGIS application does that already
-
-.. versionadded:: 2.8
 %End
 
     ~QgsEditorWidgetRegistry();
@@ -60,7 +58,7 @@ Find the best editor widget and its configuration for a given field.
     QgsEditorWidgetWrapper *create( const QString &widgetId,
                                     QgsVectorLayer *vl,
                                     int fieldIdx,
-                                    const QMap<QString, QVariant> &config,
+                                    const QVariantMap &config,
                                     QWidget *editor,
                                     QWidget *parent /TransferThis/ ) /Factory/;
 
@@ -98,7 +96,7 @@ The editor may be ``None`` if you want the widget wrapper to create a default wi
     QgsSearchWidgetWrapper *createSearchWidget( const QString &widgetId,
         QgsVectorLayer *vl,
         int fieldIdx,
-        const QMap<QString, QVariant> &config,
+        const QVariantMap &config,
         QWidget *parent /TransferThis/ ) /Factory/;
 
 

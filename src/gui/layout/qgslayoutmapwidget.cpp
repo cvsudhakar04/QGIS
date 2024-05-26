@@ -73,6 +73,7 @@ QgsLayoutMapWidget::QgsLayoutMapWidget( QgsLayoutItemMap *item, QgsMapCanvas *ma
   connect( mAtlasPredefinedScaleRadio, &QRadioButton::toggled, this, &QgsLayoutMapWidget::mAtlasPredefinedScaleRadio_toggled );
   connect( mAddGridPushButton, &QPushButton::clicked, this, &QgsLayoutMapWidget::mAddGridPushButton_clicked );
   connect( mRemoveGridPushButton, &QPushButton::clicked, this, &QgsLayoutMapWidget::mRemoveGridPushButton_clicked );
+  connect( mCopyGridPushButton, &QPushButton::clicked, this, &QgsLayoutMapWidget::mCopyGridPushButton_clicked );
   connect( mGridUpButton, &QPushButton::clicked, this, &QgsLayoutMapWidget::mGridUpButton_clicked );
   connect( mGridDownButton, &QPushButton::clicked, this, &QgsLayoutMapWidget::mGridDownButton_clicked );
   connect( mGridListWidget, &QListWidget::currentItemChanged, this, &QgsLayoutMapWidget::mGridListWidget_currentItemChanged );
@@ -91,6 +92,12 @@ QgsLayoutMapWidget::QgsLayoutMapWidget( QgsLayoutItemMap *item, QgsMapCanvas *ma
   connect( mTemporalCheckBox, &QgsCollapsibleGroupBoxBasic::toggled, this, &QgsLayoutMapWidget::mTemporalCheckBox_toggled );
   connect( mStartDateTime, &QDateTimeEdit::dateTimeChanged, this, &QgsLayoutMapWidget::updateTemporalExtent );
   connect( mEndDateTime, &QDateTimeEdit::dateTimeChanged, this, &QgsLayoutMapWidget::updateTemporalExtent );
+
+  mZLowerSpin->setClearValueMode( QgsDoubleSpinBox::ClearValueMode::MinimumValue, tr( "Not set" ) );
+  mZUpperSpin->setClearValueMode( QgsDoubleSpinBox::ClearValueMode::MinimumValue, tr( "Not set" ) );
+  connect( mElevationRangeCheckBox, &QgsCollapsibleGroupBoxBasic::toggled, this, &QgsLayoutMapWidget::mElevationRangeCheckBox_toggled );
+  connect( mZLowerSpin, qOverload< double >( &QgsDoubleSpinBox::valueChanged ), this, &QgsLayoutMapWidget::updateZRange );
+  connect( mZUpperSpin, qOverload< double >( &QgsDoubleSpinBox::valueChanged ), this, &QgsLayoutMapWidget::updateZRange );
 
   mStartDateTime->setDateTimeRange( QDateTime( QDate( 1, 1, 1 ), QTime( 0, 0, 0 ) ), mStartDateTime->maximumDateTime() );
   mEndDateTime->setDateTimeRange( QDateTime( QDate( 1, 1, 1 ), QTime( 0, 0, 0 ) ), mStartDateTime->maximumDateTime() );
@@ -191,6 +198,8 @@ QgsLayoutMapWidget::QgsLayoutMapWidget( QgsLayoutItemMap *item, QgsMapCanvas *ma
   registerDataDefinedButton( mCRSDDBtn, QgsLayoutObject::DataDefinedProperty::MapCrs );
   registerDataDefinedButton( mStartDateTimeDDBtn, QgsLayoutObject::DataDefinedProperty::StartDateTime );
   registerDataDefinedButton( mEndDateTimeDDBtn, QgsLayoutObject::DataDefinedProperty::EndDateTime );
+  registerDataDefinedButton( mZLowerDDBtn, QgsLayoutObject::DataDefinedProperty::MapZRangeLower );
+  registerDataDefinedButton( mZUpperDDBtn, QgsLayoutObject::DataDefinedProperty::MapZRangeUpper );
 
   updateGuiElements();
   loadGridEntries();
@@ -553,6 +562,41 @@ void QgsLayoutMapWidget::updateTemporalExtent()
 
   mMapItem->layout()->undoStack()->beginCommand( mMapItem, tr( "Set Temporal Range" ) );
   mMapItem->setTemporalRange( range );
+  mMapItem->layout()->undoStack()->endCommand();
+
+  updatePreview();
+}
+
+void QgsLayoutMapWidget::mElevationRangeCheckBox_toggled( bool checked )
+{
+  if ( !mMapItem )
+  {
+    return;
+  }
+
+  mMapItem->layout()->undoStack()->beginCommand( mMapItem, tr( "Toggle Z Range" ) );
+  mMapItem->setZRangeEnabled( checked );
+  mMapItem->layout()->undoStack()->endCommand();
+
+  updatePreview();
+}
+
+void QgsLayoutMapWidget::updateZRange()
+{
+  if ( !mMapItem )
+  {
+    return;
+  }
+
+  mMapItem->layout()->undoStack()->beginCommand( mMapItem, tr( "Set Z Range" ) );
+  double zLower = mZLowerSpin->value();
+  if ( zLower == mZLowerSpin->clearValue() )
+    zLower = std::numeric_limits< double >::lowest();
+  double zUpper = mZUpperSpin->value();
+  if ( zUpper == mZUpperSpin->clearValue() )
+    zUpper = std::numeric_limits< double >::max();
+
+  mMapItem->setZRange( QgsDoubleRange( zLower, zUpper ) );
   mMapItem->layout()->undoStack()->endCommand();
 
   updatePreview();
@@ -925,6 +969,17 @@ void QgsLayoutMapWidget::updateGuiElements()
     mEndDateTime->setDateTime( mMapItem->temporalRange().end() );
   }
 
+  whileBlocking( mElevationRangeCheckBox )->setChecked( mMapItem->zRangeEnabled() );
+  mElevationRangeCheckBox->setCollapsed( !mMapItem->zRangeEnabled() );
+  if ( mMapItem->zRange().lower() != std::numeric_limits< double >::lowest() )
+    whileBlocking( mZLowerSpin )->setValue( mMapItem->zRange().lower() );
+  else
+    whileBlocking( mZLowerSpin )->clear();
+  if ( mMapItem->zRange().upper() != std::numeric_limits< double >::max() )
+    whileBlocking( mZUpperSpin )->setValue( mMapItem->zRange().upper() );
+  else
+    whileBlocking( mZUpperSpin )->clear();
+
   populateDataDefinedButtons();
   loadGridEntries();
   loadOverviewEntries();
@@ -1189,6 +1244,47 @@ void QgsLayoutMapWidget::mRemoveGridPushButton_clicked()
   mMapItem->endCommand();
   mMapItem->updateBoundingRect();
   mMapItem->update();
+}
+
+void QgsLayoutMapWidget::mCopyGridPushButton_clicked()
+{
+  QListWidgetItem *item = mGridListWidget->currentItem();
+  if ( !item )
+  {
+    return;
+  }
+
+  QgsLayoutItemMapGrid *sourceGrid = mMapItem->grids()->grid( item->data( Qt::UserRole ).toString() );
+  if ( !sourceGrid )
+  {
+    return;
+  }
+  int i = 0;
+  QString itemName = tr( "%1 - Copy" ).arg( sourceGrid->name() );
+  QList< QgsLayoutItemMapGrid * > grids = mMapItem->grids()->asList();
+  while ( true )
+  {
+    const auto it = std::find_if( grids.begin(), grids.end(), [&itemName]( const QgsLayoutItemMapGrid * grd ) { return grd->name() == itemName; } );
+    if ( it != grids.end() )
+    {
+      i++;
+      itemName = tr( "%1 - Copy %2" ).arg( sourceGrid->name() ).arg( i );
+      continue;
+    }
+    break;
+  }
+  QgsLayoutItemMapGrid *grid = new QgsLayoutItemMapGrid( itemName, mMapItem );
+  grid->copyProperties( sourceGrid );
+
+  mMapItem->layout()->undoStack()->beginCommand( mMapItem, tr( "Duplicate Map Grid" ) );
+  mMapItem->grids()->addGrid( grid );
+  mMapItem->layout()->undoStack()->endCommand();
+  mMapItem->updateBoundingRect();
+  mMapItem->update();
+
+  addGridListItem( grid->id(), grid->name() );
+  mGridListWidget->setCurrentRow( 0 );
+  mGridListWidget_currentItemChanged( mGridListWidget->currentItem(), nullptr );
 }
 
 void QgsLayoutMapWidget::mGridUpButton_clicked()

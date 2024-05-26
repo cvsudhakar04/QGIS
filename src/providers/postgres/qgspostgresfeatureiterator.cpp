@@ -20,6 +20,7 @@
 #include "qgspostgrestransaction.h"
 #include "qgslogger.h"
 #include "qgsdbquerylog.h"
+#include "qgsdbquerylog_p.h"
 #include "qgsmessagelog.h"
 #include "qgsexception.h"
 #include "qgsgeometryengine.h"
@@ -541,7 +542,7 @@ QString QgsPostgresFeatureIterator::whereClauseRect()
         FROM %3.relation r, elems e
         WHERE r.layer_id = %4
           AND r.element_type = e.typ
-          AND r.element_id = e.id
+          AND ( r.element_id = e.id OR r.element_id = -e.id )
       )
     )SQL" )
                   // Should we bother with mBoundingBoxColumn ?

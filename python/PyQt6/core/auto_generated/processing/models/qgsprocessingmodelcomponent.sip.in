@@ -15,8 +15,6 @@ class QgsProcessingModelComponent
 {
 %Docstring(signature="appended")
 Represents a component of a model algorithm.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -143,16 +141,16 @@ Copies are protected to avoid slicing
 %End
 
 
-    void saveCommonProperties( QMap<QString, QVariant> &map ) const;
+    void saveCommonProperties( QVariantMap &map ) const;
 %Docstring
-Saves the component properties to a QMap<QString, QVariant>.
+Saves the component properties to a QVariantMap.
 
 .. seealso:: :py:func:`restoreCommonProperties`
 %End
 
-    void restoreCommonProperties( const QMap<QString, QVariant> &map );
+    void restoreCommonProperties( const QVariantMap &map );
 %Docstring
-Restores the component properties from a QMap<QString, QVariant>.
+Restores the component properties from a QVariantMap.
 
 .. seealso:: :py:func:`saveCommonProperties`
 %End

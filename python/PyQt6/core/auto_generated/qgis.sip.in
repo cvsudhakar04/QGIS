@@ -65,7 +65,7 @@ The development version
 %End
 
 
-    enum MessageLevel
+    enum MessageLevel /BaseType=IntEnum/
     {
       Info,
       Warning,
@@ -428,6 +428,18 @@ The development version
     typedef QFlags<Qgis::BrowserItemCapability> BrowserItemCapabilities;
 
 
+    enum class DataItemProviderCapability /BaseType=IntFlag/
+    {
+      NoCapabilities,
+      Files,
+      Directories,
+      Databases,
+      NetworkSources,
+    };
+
+    typedef QFlags<Qgis::DataItemProviderCapability> DataItemProviderCapabilities;
+
+
     enum class BrowserLayerType /BaseType=IntEnum/
       {
       NoType,
@@ -538,6 +550,12 @@ The development version
       AllowOverlapAtNoCost,
     };
 
+    enum class LabelPrioritization /BaseType=IntEnum/
+    {
+      PreferCloser,
+      PreferPositionOrdering,
+    };
+
     enum class LabelPlacement /BaseType=IntEnum/
       {
       AroundPoint,
@@ -565,6 +583,7 @@ The development version
       BottomMiddle,
       BottomSlightlyRight,
       BottomRight,
+      OverPoint,
     };
 
     enum class LabelOffsetType /BaseType=IntEnum/
@@ -650,6 +669,20 @@ The development version
     typedef QFlags<Qgis::SublayerFlag> SublayerFlags;
 
 
+    enum class ShaderInterpolationMethod /BaseType=IntEnum/
+      {
+      Linear,
+      Discrete,
+      Exact,
+    };
+
+    enum class ShaderClassificationMethod /BaseType=IntEnum/
+      {
+      Continuous,
+      EqualInterval,
+      Quantile,
+    };
+
     enum class RasterPipeInterfaceRole /BaseType=IntEnum/
       {
       Unknown,
@@ -673,10 +706,19 @@ The development version
     enum class RasterRendererFlag /BaseType=IntFlag/
     {
       InternalLayerOpacityHandling,
+      UseNoDataForOutOfRangePixels,
     };
 
     typedef QFlags<Qgis::RasterRendererFlag> RasterRendererFlags;
 
+
+
+    enum class RasterRendererCapability /BaseType=IntFlag/
+    {
+      UsesMultipleBands,
+    };
+
+    typedef QFlags<Qgis::RasterRendererCapability> RasterRendererCapabilities;
 
 
     enum class RasterAttributeTableFieldUsage /BaseType=IntEnum/
@@ -874,6 +916,14 @@ The development version
       Simulation,
     };
 
+    enum class GpsNavigationStatus /BaseType=IntEnum/
+    {
+      NotValid,
+      Safe,
+      Caution,
+      Unsafe,
+    };
+
     enum class GpsInformationComponent /BaseType=IntFlag/
     {
       Location,
@@ -1056,6 +1106,8 @@ The development version
     enum class DataProviderFlag /BaseType=IntFlag/
     {
       IsBasemapSource,
+      FastExtent2D,
+      FastExtent3D,
     };
     typedef QFlags<Qgis::DataProviderFlag> DataProviderFlags;
 
@@ -1235,6 +1287,8 @@ The development version
       FixedTemporalRange,
       TemporalRangeFromDataProvider,
       RedrawLayerOnly,
+      FixedRangePerBand,
+      RepresentsTemporalValues,
     };
 
     enum class TemporalIntervalMatchMethod /BaseType=IntEnum/
@@ -1766,6 +1820,13 @@ The development version
       ModelOutput,
     };
 
+    enum class ProcessingModelChildAlgorithmExecutionStatus /BaseType=IntEnum/
+    {
+      NotExecuted,
+      Success,
+      Failed,
+    };
+
     enum class ProcessingTinInputLayerType /BaseType=IntEnum/
       {
       Vertices,
@@ -1794,6 +1855,13 @@ The development version
       GeometryWeighted,
     };
 
+    enum class FieldDuplicatePolicy /BaseType=IntEnum/
+    {
+      DefaultValue,
+      Duplicate,
+      UnsetField,
+    };
+
     enum class FieldDomainType /BaseType=IntEnum/
     {
       Coded,
@@ -1819,6 +1887,29 @@ The development version
     {
       Vertex,
       Centroid,
+    };
+
+    enum class RangeLimits /BaseType=IntEnum/
+    {
+      IncludeBoth,
+      IncludeLowerExcludeUpper,
+      ExcludeLowerIncludeUpper,
+      ExcludeBoth,
+    };
+
+    enum class RasterElevationMode /BaseType=IntEnum/
+    {
+      FixedElevationRange,
+      RepresentsElevationSurface,
+      FixedRangePerBand,
+      DynamicRangePerBand,
+    };
+
+    enum class MeshElevationMode /BaseType=IntEnum/
+    {
+      FixedElevationRange,
+      FromVertices,
+      FixedRangePerGroup,
     };
 
     enum class BetweenLineConstraint /BaseType=IntEnum/
@@ -2695,6 +2786,20 @@ The development version
     typedef QFlags<Qgis::RasterBandStatistic> RasterBandStatistics;
 
 
+    enum class SensorThingsEntity /BaseType=IntEnum/
+    {
+      Invalid,
+      Thing,
+      Location,
+      HistoricalLocation,
+      Datastream,
+      Sensor,
+      ObservedProperty,
+      Observation,
+      FeatureOfInterest,
+      MultiDatastream,
+    };
+
     static const double DEFAULT_SEARCH_RADIUS_MM;
 
     static const float DEFAULT_MAPTOPIXEL_THRESHOLD;
@@ -2817,6 +2922,8 @@ QFlags<Qgis::ProjectReadFlag> operator|(Qgis::ProjectReadFlag f1, QFlags<Qgis::P
 
 QFlags<Qgis::RasterRendererFlag> operator|(Qgis::RasterRendererFlag f1, QFlags<Qgis::RasterRendererFlag> f2);
 
+QFlags<Qgis::RasterRendererCapability> operator|(Qgis::RasterRendererCapability f1, QFlags<Qgis::RasterRendererCapability> f2);
+
 QFlags<Qgis::RasterTemporalCapabilityFlag> operator|(Qgis::RasterTemporalCapabilityFlag f1, QFlags<Qgis::RasterTemporalCapabilityFlag> f2);
 
 QFlags<Qgis::RelationshipCapability> operator|(Qgis::RelationshipCapability f1, QFlags<Qgis::RelationshipCapability> f2);
@@ -2893,6 +3000,8 @@ QFlags<Qgis::ProcessingParameterTypeFlag> operator|(Qgis::ProcessingParameterTyp
 
 QFlags<Qgis::ProcessingParameterFlag> operator|(Qgis::ProcessingParameterFlag f1, QFlags<Qgis::ProcessingParameterFlag> f2);
 
+QFlags<Qgis::DataItemProviderCapability> operator|(Qgis::DataItemProviderCapability f1, QFlags<Qgis::DataItemProviderCapability> f2);
+
 
 
 
@@ -2949,8 +3058,6 @@ Compare two doubles using specified number of significant digits
 double qgsRound( double number, int places );
 %Docstring
 Returns a double ``number``, rounded (as close as possible) to the specified number of ``places``.
-
-.. versionadded:: 3.0
 %End
 
 
@@ -2972,8 +3079,6 @@ numbers of digits between thousand separators
 :return: string converted to double if possible
 
 .. seealso:: :py:func:`permissiveToInt`
-
-.. versionadded:: 2.9
 %End
 
 int qgsPermissiveToInt( QString string, bool &ok );
@@ -2987,8 +3092,6 @@ numbers of digits between thousand separators
 :return: string converted to int if possible
 
 .. seealso:: :py:func:`permissiveToDouble`
-
-.. versionadded:: 2.9
 %End
 
 qlonglong qgsPermissiveToLongLong( QString string, bool &ok );

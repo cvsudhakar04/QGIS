@@ -1901,7 +1901,7 @@ static QVariant fcnMapToHtmlTable( const QVariantList &values, const QgsExpressi
   QString table { R"html(
   <table>
     <thead>
-      <th>%1</th>
+      <tr><th>%1</th></tr>
     </thead>
     <tbody>
       <tr><td>%2</td></tr>
@@ -5807,9 +5807,13 @@ static QVariant fcnFormatNumber( const QVariantList &values, const QgsExpression
 
 static QVariant fcnFormatDate( const QVariantList &values, const QgsExpressionContext *, QgsExpression *parent, const QgsExpressionNodeFunction * )
 {
-  const QDateTime datetime = QgsExpressionUtils::getDateTimeValue( values.at( 0 ), parent );
+  QDateTime datetime = QgsExpressionUtils::getDateTimeValue( values.at( 0 ), parent );
   const QString format = QgsExpressionUtils::getStringValue( values.at( 1 ), parent );
   const QString language = QgsExpressionUtils::getStringValue( values.at( 2 ), parent );
+
+  // Convert to UTC if the format string includes a Z, as QLocale::toString() doesn't do it
+  if ( format.indexOf( "Z" ) > 0 )
+    datetime = datetime.toUTC();
 
   QLocale locale = !language.isEmpty() ? QLocale( language ) : QLocale();
   return locale.toString( datetime, format );
@@ -6470,9 +6474,9 @@ static QVariant fcnGetLayerProperty( const QVariantList &values, const QgsExpres
     else if ( QString::compare( layerProperty, QStringLiteral( "id" ), Qt::CaseInsensitive ) == 0 )
       return layer->id();
     else if ( QString::compare( layerProperty, QStringLiteral( "title" ), Qt::CaseInsensitive ) == 0 )
-      return !layer->metadata().title().isEmpty() ? layer->metadata().title() : layer->title();
+      return !layer->metadata().title().isEmpty() ? layer->metadata().title() : layer->serverProperties()->title();
     else if ( QString::compare( layerProperty, QStringLiteral( "abstract" ), Qt::CaseInsensitive ) == 0 )
-      return !layer->metadata().abstract().isEmpty() ? layer->metadata().abstract() : layer->abstract();
+      return !layer->metadata().abstract().isEmpty() ? layer->metadata().abstract() : layer->serverProperties()->abstract();
     else if ( QString::compare( layerProperty, QStringLiteral( "keywords" ), Qt::CaseInsensitive ) == 0 )
     {
       QStringList keywords;
@@ -6483,16 +6487,16 @@ static QVariant fcnGetLayerProperty( const QVariantList &values, const QgsExpres
       }
       if ( !keywords.isEmpty() )
         return keywords;
-      return layer->keywordList();
+      return layer->serverProperties()->keywordList();
     }
     else if ( QString::compare( layerProperty, QStringLiteral( "data_url" ), Qt::CaseInsensitive ) == 0 )
-      return layer->dataUrl();
+      return layer->serverProperties()->dataUrl();
     else if ( QString::compare( layerProperty, QStringLiteral( "attribution" ), Qt::CaseInsensitive ) == 0 )
     {
-      return !layer->metadata().rights().isEmpty() ? QVariant( layer->metadata().rights() ) : QVariant( layer->attribution() );
+      return !layer->metadata().rights().isEmpty() ? QVariant( layer->metadata().rights() ) : QVariant( layer->serverProperties()->attribution() );
     }
     else if ( QString::compare( layerProperty, QStringLiteral( "attribution_url" ), Qt::CaseInsensitive ) == 0 )
-      return layer->attributionUrl();
+      return layer->serverProperties()->attributionUrl();
     else if ( QString::compare( layerProperty, QStringLiteral( "source" ), Qt::CaseInsensitive ) == 0 )
       return layer->publicSource();
     else if ( QString::compare( layerProperty, QStringLiteral( "min_scale" ), Qt::CaseInsensitive ) == 0 )

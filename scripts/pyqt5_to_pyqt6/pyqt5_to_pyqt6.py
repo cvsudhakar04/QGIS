@@ -158,6 +158,7 @@ deprecated_renamed_enums = {
     ('Qt', 'MidButton'): ('MouseButton', 'MiddleButton'),
     ('Qt', 'TextColorRole'): ('ItemDataRole', 'ForegroundRole'),
     ('Qt', 'BackgroundColorRole'): ('ItemDataRole', 'BackgroundRole'),
+    ('QPainter', 'HighQualityAntialiasing'): ('RenderHint', 'Antialiasing'),
 }
 
 rename_function_attributes = {
@@ -195,6 +196,13 @@ def fix_file(filename: str, qgis3_compat: bool) -> int:
     removed_imports = defaultdict(set)
     import_offsets = {}
 
+    object_types = {}
+
+    def visit_assign(_node: ast.Assign, _parent):
+        if isinstance(_node.value, ast.Call) and isinstance(_node.value.func,
+                                                            ast.Name) and _node.value.func.id in ('QFontMetrics', 'QFontMetricsF'):
+            object_types[_node.targets[0].id] = _node.value.func.id
+
     def visit_call(_node: ast.Call, _parent):
         if isinstance(_node.func, ast.Attribute):
             if _node.func.attr in rename_function_attributes:
@@ -207,9 +215,27 @@ def fix_file(filename: str, qgis3_compat: bool) -> int:
                 if len(_node.args) >= 4:
                     sys.stderr.write(
                         f'{filename}:{_node.lineno}:{_node.col_offset} WARNING: fragile call to addAction. Use my_action = QAction(...), obj.addAction(my_action) instead.\n')
+            if _node.func.attr == 'desktop':
+                if len(_node.args) == 0:
+                    sys.stderr.write(
+                        f'{filename}:{_node.lineno}:{_node.col_offset} WARNING: QDesktopWidget is deprecated and removed in Qt6. Replace with alternative approach instead.\n')
 
         if isinstance(_node.func, ast.Name) and _node.func.id == 'QVariant':
-            if len(_node.args) == 1 and isinstance(_node.args[0], ast.Attribute) and isinstance(_node.args[0].value, ast.Name) and _node.args[0].value.id == 'QVariant':
+            if not _node.args:
+                extra_imports['qgis.core'].update({'NULL'})
+
+                def _invalid_qvariant_to_null(start_index: int, tokens):
+                    assert tokens[start_index].src == 'QVariant'
+                    assert tokens[start_index + 1].src == '('
+                    assert tokens[start_index + 2].src == ')'
+
+                    tokens[start_index] = tokens[start_index]._replace(src='NULL')
+                    for i in range(start_index + 1, start_index + 3):
+                        tokens[i] = tokens[i]._replace(src='')
+
+                custom_updates[Offset(_node.lineno,
+                                      _node.col_offset)] = _invalid_qvariant_to_null
+            elif len(_node.args) == 1 and isinstance(_node.args[0], ast.Attribute) and isinstance(_node.args[0].value, ast.Name) and _node.args[0].value.id == 'QVariant':
                 extra_imports['qgis.core'].update({'NULL'})
 
                 def _fix_null_qvariant(start_index: int, tokens):
@@ -292,6 +318,34 @@ def fix_file(filename: str, qgis3_compat: bool) -> int:
                         src='')
 
                 custom_updates[Offset(node.lineno, node.col_offset)] = _replace_qvariant_type
+            if object_types.get(_node.value.id) in ('QFontMetrics', 'QFontMetricsF'):
+                if _node.attr == 'width':
+                    sys.stderr.write(
+                        f'{filename}:{_node.lineno}:{_node.col_offset} WARNING: QFontMetrics.width() '
+                        'has been removed in Qt6. Use QFontMetrics.horizontalAdvance() if plugin can '
+                        'safely require Qt >= 5.11, or QFontMetrics.boundingRect().width() otherwise.\n')
+
+        elif isinstance(_node.value, ast.Call):
+            if (_node.attr == 'width' and ((
+                isinstance(_node.value.func, ast.Attribute) and
+                _node.value.func.attr == 'fontMetrics')
+                or (isinstance(_node.value.func, ast.Name) and
+                    _node.value.func.id == 'QFontMetrics'))):
+                sys.stderr.write(
+                    f'{filename}:{_node.lineno}:{_node.col_offset} WARNING: QFontMetrics.width() '
+                    'has been removed in Qt6. Use QFontMetrics.horizontalAdvance() if plugin can '
+                    'safely require Qt >= 5.11, or QFontMetrics.boundingRect().width() otherwise.\n')
+
+    def visit_subscript(_node: ast.Subscript, _parent):
+        if isinstance(_node.value, ast.Attribute):
+            if (_node.value.attr == 'activated' and
+                isinstance(_node.slice, ast.Name) and
+                    _node.slice.id == 'str'):
+                sys.stderr.write(
+                    f'{filename}:{_node.lineno}:{_node.col_offset} WARNING: activated[str] '
+                    'has been removed in Qt6. Consider using QComboBox.activated instead if the string is not required, '
+                    'or QComboBox.textActivated if the plugin can '
+                    'safely require Qt >= 5.14. Otherwise conditional Qt version code will need to be introduced.\n')
 
     def visit_import(_node: ast.ImportFrom, _parent):
         import_offsets[Offset(node.lineno, node.col_offset)] = (
@@ -301,6 +355,11 @@ def fix_file(filename: str, qgis3_compat: bool) -> int:
         for name in node.names:
             if name.name in import_warnings:
                 print(f'{filename}: {import_warnings[name.name]}')
+            if name.name == 'resources_rc':
+                sys.stderr.write(
+                    f'{filename}:{_node.lineno}:{_node.col_offset} WARNING: support for compiled resources '
+                    'is removed in Qt6. Directly load icon resources by file path and load UI fields using '
+                    'uic.loadUiType by file path instead.\n')
         if _node.module == 'qgis.PyQt.Qt':
             extra_imports['qgis.PyQt.QtCore'].update({'Qt'})
             removed_imports['qgis.PyQt.Qt'].update({'Qt'})
@@ -317,9 +376,12 @@ def fix_file(filename: str, qgis3_compat: bool) -> int:
 
             if isinstance(node, ast.Call):
                 visit_call(node, parent)
-
-            if isinstance(node, ast.Attribute):
+            elif isinstance(node, ast.Attribute):
                 visit_attribute(node, parent)
+            elif isinstance(node, ast.Subscript):
+                visit_subscript(node, parent)
+            elif isinstance(node, ast.Assign):
+                visit_assign(node, parent)
 
             if isinstance(node, ast.FunctionDef) and node.name in rename_function_definitions:
                 function_def_renames[
@@ -351,7 +413,7 @@ def fix_file(filename: str, qgis3_compat: bool) -> int:
                                        in ambiguous_enums[
                                            (node.value.id, node.attr)]]
                     sys.stderr.write(f'{filename}:{node.lineno}:{node.col_offset} WARNING: ambiguous enum, cannot fix: {node.value.id}.{node.attr}. Could be: {", ".join(possible_values)}\n')
-            elif (isinstance(node, ast.Attribute) and isinstance(node.value, ast.Name)
+            elif (isinstance(node, ast.Attribute) and isinstance(node.value, ast.Name) and not isinstance(parent, ast.Attribute)
                     and (node.value.id, node.attr) in qt_enums):
                 fix_qt_enums[Offset(node.lineno, node.col_offset)] = (node.value.id, qt_enums[(node.value.id, node.attr)], node.attr)
 
@@ -384,6 +446,7 @@ def fix_file(filename: str, qgis3_compat: bool) -> int:
     for i, token in reversed_enumerate(tokens):
         if token.offset in import_offsets:
             end_import_offset = Offset(*import_offsets[token.offset][-2:])
+            del import_offsets[token.offset]
             assert tokens[i].src == 'from'
             token_index = i + 1
             while not tokens[token_index].src.strip():

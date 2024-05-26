@@ -50,7 +50,6 @@ class QgsAnnotationLayer;
  *
  * \brief Encapsulates settings relating to a feature source input to a processing algorithm.
  *
- * \since QGIS 3.0
  */
 
 class CORE_EXPORT QgsProcessingFeatureSourceDefinition
@@ -143,10 +142,9 @@ class CORE_EXPORT QgsProcessingFeatureSourceDefinition
 
     /**
      * Geometry check method to apply to this source. This setting is only
-     * utilized if the QgsProcessingFeatureSourceDefinition::Flag::FlagCreateIndividualOutputPerInputFeature is
+     * utilized if the Qgis::ProcessingFeatureSourceDefinitionFlag::OverrideDefaultGeometryCheck is
      * set in QgsProcessingFeatureSourceDefinition::flags.
      *
-     * \see overrideDefaultGeometryCheck
      * \since QGIS 3.14
      */
     Qgis::InvalidGeometryCheck geometryCheck = Qgis::InvalidGeometryCheck::AbortOnInvalid;
@@ -199,7 +197,6 @@ Q_DECLARE_METATYPE( QgsProcessingFeatureSourceDefinition )
  *
  * \brief Encapsulates settings relating to a feature sink or output raster layer for a processing algorithm.
  *
- * \since QGIS 3.0
  */
 
 class CORE_EXPORT QgsProcessingOutputLayerDefinition
@@ -331,7 +328,6 @@ Q_DECLARE_METATYPE( QgsProcessingOutputLayerDefinition )
  * Parameter definitions encapsulate properties regarding the behavior of parameters,
  * their acceptable ranges, defaults, etc.
  *
- * \since QGIS 3.0
  */
 
 class CORE_EXPORT QgsProcessingParameterDefinition
@@ -945,7 +941,6 @@ typedef QList< const QgsProcessingParameterDefinition * > QgsProcessingParameter
  * the evaluation to understand available map layers and expression contexts
  * (for expression based parameters).
  *
- * \since QGIS 3.0
 */
 
 class CORE_EXPORT QgsProcessingParameters
@@ -1768,7 +1763,6 @@ class CORE_EXPORT QgsProcessingParameters
  * \class QgsProcessingParameterBoolean
  * \ingroup core
  * \brief A boolean parameter for processing algorithms.
-  * \since QGIS 3.0
  */
 class CORE_EXPORT QgsProcessingParameterBoolean : public QgsProcessingParameterDefinition
 {
@@ -1799,7 +1793,6 @@ class CORE_EXPORT QgsProcessingParameterBoolean : public QgsProcessingParameterD
  * \class QgsProcessingParameterCrs
  * \ingroup core
  * \brief A coordinate reference system parameter for processing algorithms.
-  * \since QGIS 3.0
  */
 class CORE_EXPORT QgsProcessingParameterCrs : public QgsProcessingParameterDefinition
 {
@@ -1833,7 +1826,6 @@ class CORE_EXPORT QgsProcessingParameterCrs : public QgsProcessingParameterDefin
  * \class QgsProcessingParameterExtent
  * \ingroup core
  * \brief A rectangular map extent parameter for processing algorithms.
-  * \since QGIS 3.0
  */
 class CORE_EXPORT QgsProcessingParameterExtent : public QgsProcessingParameterDefinition
 {
@@ -1868,7 +1860,6 @@ class CORE_EXPORT QgsProcessingParameterExtent : public QgsProcessingParameterDe
  * \class QgsProcessingParameterPoint
  * \ingroup core
  * \brief A point parameter for processing algorithms.
-  * \since QGIS 3.0
  */
 class CORE_EXPORT QgsProcessingParameterPoint : public QgsProcessingParameterDefinition
 {
@@ -1970,7 +1961,6 @@ class CORE_EXPORT QgsProcessingParameterGeometry : public QgsProcessingParameter
  * \class QgsProcessingParameterFile
  * \ingroup core
  * \brief An input file or folder parameter for processing algorithms.
-  * \since QGIS 3.0
  */
 class CORE_EXPORT QgsProcessingParameterFile : public QgsProcessingParameterDefinition, public QgsFileFilterGenerator
 {
@@ -2067,7 +2057,6 @@ class CORE_EXPORT QgsProcessingParameterFile : public QgsProcessingParameterDefi
  * \class QgsProcessingParameterMatrix
  * \ingroup core
  * \brief A table (matrix) parameter for processing algorithms.
-  * \since QGIS 3.0
  */
 class CORE_EXPORT QgsProcessingParameterMatrix : public QgsProcessingParameterDefinition
 {
@@ -2153,7 +2142,6 @@ class CORE_EXPORT QgsProcessingParameterMatrix : public QgsProcessingParameterDe
  * \class QgsProcessingParameterMultipleLayers
  * \ingroup core
  * \brief A parameter for processing algorithms which accepts multiple map layers.
-  * \since QGIS 3.0
  */
 class CORE_EXPORT QgsProcessingParameterMultipleLayers : public QgsProcessingParameterDefinition, public QgsFileFilterGenerator
 {
@@ -2237,7 +2225,6 @@ class CORE_EXPORT QgsProcessingParameterMultipleLayers : public QgsProcessingPar
  *   })
  * \endcode
  *
- * \since QGIS 3.0
  */
 class CORE_EXPORT QgsProcessingParameterNumber : public QgsProcessingParameterDefinition
 {
@@ -2493,7 +2480,6 @@ class CORE_EXPORT QgsProcessingParameterScale : public QgsProcessingParameterNum
  * \class QgsProcessingParameterRange
  * \ingroup core
  * \brief A numeric range parameter for processing algorithms.
-  * \since QGIS 3.0
  */
 class CORE_EXPORT QgsProcessingParameterRange : public QgsProcessingParameterDefinition
 {
@@ -2546,7 +2532,6 @@ class CORE_EXPORT QgsProcessingParameterRange : public QgsProcessingParameterDef
  * \class QgsProcessingParameterRasterLayer
  * \ingroup core
  * \brief A raster layer parameter for processing algorithms.
-  * \since QGIS 3.0
  */
 class CORE_EXPORT QgsProcessingParameterRasterLayer : public QgsProcessingParameterDefinition, public QgsFileFilterGenerator
 {
@@ -2593,7 +2578,6 @@ class CORE_EXPORT QgsProcessingParameterRasterLayer : public QgsProcessingParame
  *   })
  * \endcode
  *
- * \since QGIS 3.0
  */
 class CORE_EXPORT QgsProcessingParameterEnum : public QgsProcessingParameterDefinition
 {
@@ -2700,7 +2684,6 @@ class CORE_EXPORT QgsProcessingParameterEnum : public QgsProcessingParameterDefi
  *   })
  * \endcode
  *
- * \since QGIS 3.0
  */
 class CORE_EXPORT QgsProcessingParameterString : public QgsProcessingParameterDefinition
 {
@@ -2792,7 +2775,6 @@ class CORE_EXPORT QgsProcessingParameterAuthConfig : public QgsProcessingParamet
  * \class QgsProcessingParameterExpression
  * \ingroup core
  * \brief An expression parameter for processing algorithms.
-  * \since QGIS 3.0
  */
 class CORE_EXPORT QgsProcessingParameterExpression : public QgsProcessingParameterDefinition
 {
@@ -2862,7 +2844,6 @@ class CORE_EXPORT QgsProcessingParameterExpression : public QgsProcessingParamet
  * \class QgsProcessingParameterLimitedDataTypes
  * \ingroup core
  * \brief Can be inherited by parameters which require limits to their acceptable data types.
-  * \since QGIS 3.0
  */
 class CORE_EXPORT QgsProcessingParameterLimitedDataTypes
 {
@@ -2896,7 +2877,6 @@ class CORE_EXPORT QgsProcessingParameterLimitedDataTypes
  * \ingroup core
  * \brief A vector layer (with or without geometry) parameter for processing algorithms. Consider using
  * the more versatile QgsProcessingParameterFeatureSource wherever possible.
-  * \since QGIS 3.0
  */
 class CORE_EXPORT QgsProcessingParameterVectorLayer : public QgsProcessingParameterDefinition, public QgsProcessingParameterLimitedDataTypes, public QgsFileFilterGenerator
 {
@@ -2974,7 +2954,6 @@ class CORE_EXPORT QgsProcessingParameterMeshLayer : public QgsProcessingParamete
  * \class QgsProcessingParameterMapLayer
  * \ingroup core
  * \brief A map layer parameter for processing algorithms.
-  * \since QGIS 3.0
  */
 class CORE_EXPORT QgsProcessingParameterMapLayer : public QgsProcessingParameterDefinition, public QgsProcessingParameterLimitedDataTypes, public QgsFileFilterGenerator
 {
@@ -3015,7 +2994,6 @@ class CORE_EXPORT QgsProcessingParameterMapLayer : public QgsProcessingParameter
  * \class QgsProcessingParameterField
  * \ingroup core
  * \brief A vector layer or feature source field parameter for processing algorithms.
-  * \since QGIS 3.0
  */
 class CORE_EXPORT QgsProcessingParameterField : public QgsProcessingParameterDefinition
 {
@@ -3123,7 +3101,6 @@ class CORE_EXPORT QgsProcessingParameterField : public QgsProcessingParameterDef
  * \class QgsProcessingParameterFeatureSource
  * \ingroup core
  * \brief An input feature source (such as vector layers) parameter for processing algorithms.
-  * \since QGIS 3.0
  */
 class CORE_EXPORT QgsProcessingParameterFeatureSource : public QgsProcessingParameterDefinition, public QgsProcessingParameterLimitedDataTypes, public QgsFileFilterGenerator
 {
@@ -3165,7 +3142,6 @@ class CORE_EXPORT QgsProcessingParameterFeatureSource : public QgsProcessingPara
  * \ingroup core
  * \brief Base class for all parameter definitions which represent file or layer destinations, e.g. parameters
  * which are used for the destination for layers output by an algorithm.
-  * \since QGIS 3.0
  */
 class CORE_EXPORT QgsProcessingDestinationParameter : public QgsProcessingParameterDefinition, public QgsFileFilterGenerator
 {
@@ -3287,7 +3263,6 @@ class CORE_EXPORT QgsProcessingDestinationParameter : public QgsProcessingParame
  * \brief A feature sink output for processing algorithms.
  *
  * A parameter which represents the destination feature sink for features created by an algorithm.
-  * \since QGIS 3.0
  */
 class CORE_EXPORT QgsProcessingParameterFeatureSink : public QgsProcessingDestinationParameter
 {
@@ -3385,7 +3360,6 @@ class CORE_EXPORT QgsProcessingParameterFeatureSink : public QgsProcessingDestin
  *
  * \note Consider using the more flexible QgsProcessingParameterFeatureSink wherever
  * possible.
-  * \since QGIS 3.0
  */
 class CORE_EXPORT QgsProcessingParameterVectorDestination : public QgsProcessingDestinationParameter
 {
@@ -3458,7 +3432,6 @@ class CORE_EXPORT QgsProcessingParameterVectorDestination : public QgsProcessing
  * \ingroup core
  * \brief A raster layer destination parameter, for specifying the destination path for a raster layer
  * created by the algorithm.
-  * \since QGIS 3.0
  */
 class CORE_EXPORT QgsProcessingParameterRasterDestination : public QgsProcessingDestinationParameter
 {
@@ -3519,7 +3492,6 @@ class CORE_EXPORT QgsProcessingParameterRasterDestination : public QgsProcessing
  *   })
  * \endcode
  *
- * \since QGIS 3.0
  */
 class CORE_EXPORT QgsProcessingParameterFileDestination : public QgsProcessingDestinationParameter
 {
@@ -3581,7 +3553,6 @@ class CORE_EXPORT QgsProcessingParameterFileDestination : public QgsProcessingDe
  * \ingroup core
  * \brief A folder destination parameter, for specifying the destination path for a folder created
  * by the algorithm or used for creating new files within the algorithm.
- * \since QGIS 3.0
  */
 class CORE_EXPORT QgsProcessingParameterFolderDestination : public QgsProcessingDestinationParameter
 {
@@ -3616,7 +3587,6 @@ class CORE_EXPORT QgsProcessingParameterFolderDestination : public QgsProcessing
  * \class QgsProcessingParameterBand
  * \ingroup core
  * \brief A raster band parameter for Processing algorithms.
-  * \since QGIS 3.0
  */
 class CORE_EXPORT QgsProcessingParameterBand : public QgsProcessingParameterDefinition
 {

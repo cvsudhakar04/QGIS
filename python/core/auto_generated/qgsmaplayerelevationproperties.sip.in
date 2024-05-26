@@ -65,6 +65,8 @@ how an individual :py:class:`QgsMapLayer` behaves with relation to z values or e
       {
       ZOffset,
       ExtrusionHeight,
+      RasterPerBandLowerElevation,
+      RasterPerBandUpperElevation,
     };
 
     enum Flag
@@ -119,9 +121,11 @@ Creates a clone of the properties.
 .. versionadded:: 3.26
 %End
 
-    virtual bool isVisibleInZRange( const QgsDoubleRange &range ) const;
+    virtual bool isVisibleInZRange( const QgsDoubleRange &range, QgsMapLayer *layer = 0 ) const;
 %Docstring
 Returns ``True`` if the layer should be visible and rendered for the specified z ``range``.
+
+Since QGIS 3.38 the ``layer`` argument can be used to specify the target layer.
 %End
 
     virtual QgsMapLayerElevationProperties::Flags flags() const;
@@ -135,6 +139,16 @@ Attempts to calculate the overall elevation or z range for the specified ``layer
 the settings defined by this elevation properties object.
 
 May return an infinite range if the extent could not be calculated.
+%End
+
+    virtual QList< double > significantZValues( QgsMapLayer *layer ) const;
+%Docstring
+Returns a list of significant elevation/z-values for the specified ``layer``, using
+the settings defined by this elevation properties object.
+
+These values will be highlighted in elevation related widgets for the layer.
+
+.. versionadded:: 3.38
 %End
 
     virtual bool showByDefaultInElevationProfilePlots() const;

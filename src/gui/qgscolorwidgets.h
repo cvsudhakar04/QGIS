@@ -33,7 +33,6 @@ class QToolButton;
  * a color (e.g., the red or green components), or an entire color. The QgsColorWidget also keeps track of
  * any explicitly set hue for the color, so that this information is not lost when the widget is
  * set to a color with an ambiguous hue (e.g., black or white shades).
- * \since QGIS 2.5
  */
 
 class GUI_EXPORT QgsColorWidget : public QWidget
@@ -54,7 +53,11 @@ class GUI_EXPORT QgsColorWidget : public QWidget
       Hue, //!< Hue component of color (based on HSV model)
       Saturation, //!< Saturation component of color (based on HSV model)
       Value, //!< Value component of color (based on HSV model)
-      Alpha //!< Alpha component (opacity) of color
+      Alpha, //!< Alpha component (opacity) of color
+      Cyan, //!< Cyan component (based on CMYK model) of color
+      Magenta, //!< Magenta component (based on CMYK model) of color
+      Yellow, //!< Yellow component (based on CMYK model) of color
+      Black //!< Black component (based on CMYK model) of color
     };
 
     /**
@@ -131,7 +134,6 @@ class GUI_EXPORT QgsColorWidget : public QWidget
 
     /**
      * Emitted when mouse hovers over widget.
-     * \since QGIS 2.14
      */
     void hovered();
 
@@ -157,7 +159,7 @@ class GUI_EXPORT QgsColorWidget : public QWidget
      * Returns the range of valid values a color component
      * \returns maximum value allowed for color component
      */
-    int componentRange( ColorComponent component ) const;
+    static int componentRange( ColorComponent component );
 
     /**
      * Returns the value of a component of the widget's current color. This method correctly
@@ -182,7 +184,17 @@ class GUI_EXPORT QgsColorWidget : public QWidget
      * \param newValue new value of color component. Values are automatically clipped to a
      * valid range for the color component.
      */
-    void alterColor( QColor &color, QgsColorWidget::ColorComponent component, int newValue ) const;
+    static void alterColor( QColor &color, QgsColorWidget::ColorComponent component, int newValue );
+
+    /**
+     * Returns color widget type of color, either RGB, HSV, CMYK, or Invalid if this component value is Multiple or Alpha
+     */
+    QColor::Spec colorSpec() const;
+
+    /**
+     * Returns \a component type of color, either RGB, HSV, CMYK, or Invalid if \a component value is Multiple or Alpha
+     */
+    static QColor::Spec colorSpec( QgsColorWidget::ColorComponent component );
 
     /**
      * Generates a checkboard pattern pixmap for use as a background to transparent colors
@@ -199,6 +211,8 @@ class GUI_EXPORT QgsColorWidget : public QWidget
     void mouseMoveEvent( QMouseEvent *e ) override;
     void mousePressEvent( QMouseEvent *e ) override;
     void mouseReleaseEvent( QMouseEvent *e ) override;
+
+    friend class TestQgsCompoundColorWidget;
 };
 
 
@@ -207,7 +221,6 @@ class GUI_EXPORT QgsColorWidget : public QWidget
  * \class QgsColorWidgetAction
  * \brief An action containing a color widget, which can be embedded into a menu.
  * \see QgsColorWidget
- * \since QGIS 2.14
  */
 
 class GUI_EXPORT QgsColorWidgetAction: public QWidgetAction
@@ -283,7 +296,6 @@ class GUI_EXPORT QgsColorWidgetAction: public QWidgetAction
  * \class QgsColorWheel
  * \brief A color wheel widget. This widget consists of an outer ring which allows for hue selection, and an
  * inner rotating triangle which allows for saturation and value selection.
- * \since QGIS 2.5
  */
 
 class GUI_EXPORT QgsColorWheel : public QgsColorWidget
@@ -379,7 +391,6 @@ class GUI_EXPORT QgsColorWheel : public QgsColorWidget
  * \brief A color box widget. This widget consists of a two dimensional rectangle filled with color
  * variations, where a different color component varies along both the horizontal and vertical
  * axis.
- * \since QGIS 2.5
  */
 
 class GUI_EXPORT QgsColorBox : public QgsColorWidget
@@ -478,7 +489,6 @@ class GUI_EXPORT QgsColorBox : public QgsColorWidget
  * \class QgsColorRampWidget
  * \brief A color ramp widget. This widget consists of an interactive box filled with a color which varies along
  * its length by a single color component (e.g., varying saturation from 0 to 100%).
- * \since QGIS 2.5
  */
 
 class GUI_EXPORT QgsColorRampWidget : public QgsColorWidget
@@ -605,7 +615,6 @@ class GUI_EXPORT QgsColorRampWidget : public QgsColorWidget
  * \ingroup gui
  * \class QgsColorSliderWidget
  * \brief A composite horizontal color ramp widget and associated spinbox for manual value entry.
- * \since QGIS 2.5
  */
 
 class GUI_EXPORT QgsColorSliderWidget : public QgsColorWidget
@@ -675,7 +684,6 @@ class GUI_EXPORT QgsColorSliderWidget : public QgsColorWidget
  * \class QgsColorTextWidget
  * \brief A line edit widget which displays colors as text and accepts string representations
  * of colors.
- * \since QGIS 2.5
  */
 
 class GUI_EXPORT QgsColorTextWidget : public QgsColorWidget
@@ -749,7 +757,6 @@ class GUI_EXPORT QgsColorTextWidget : public QgsColorWidget
  * \ingroup gui
  * \class QgsColorPreviewWidget
  * \brief A preview box which displays one or two colors as swatches.
- * \since QGIS 2.5
  */
 
 class GUI_EXPORT QgsColorPreviewWidget : public QgsColorWidget

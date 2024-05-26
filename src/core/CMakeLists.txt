@@ -11,6 +11,14 @@ BISON_TARGET(QgsMeshCalcParser mesh/qgsmeshcalcparser.yy ${CMAKE_CURRENT_BINARY_
 FLEX_TARGET(QgsMeshCalcLexer mesh/qgsmeshcalclexer.ll ${CMAKE_CURRENT_BINARY_DIR}/qgsmeshcalclexer.cpp)
 ADD_FLEX_BISON_DEPENDENCY(QgsMeshCalcLexer QgsMeshCalcParser)
 
+if (WITH_PDF4QT)
+  SET(PDF4QT_BUILD_ONLY_CORE_LIBRARY TRUE)
+  SET(PDF4QT_ENABLE_OPENGL FALSE)
+  set(CMAKE_CXX_STANDARD 20)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+  SUBDIRS(${CMAKE_SOURCE_DIR}/external/PDF4QT)
+endif()
+
 set(QGIS_CORE_SRCS
   ${CMAKE_SOURCE_DIR}/external/kdbush/include/kdbush.hpp
 
@@ -57,6 +65,7 @@ set(QGIS_CORE_SRCS
   elevation/qgsprofilerenderer.cpp
   elevation/qgsprofilerequest.cpp
   elevation/qgsprofilesnapping.cpp
+  elevation/qgsprofilesourceregistry.cpp
   elevation/qgsterrainprovider.cpp
 
   geocoding/qgsabstractgeocoderlocatorfilter.cpp
@@ -244,6 +253,8 @@ set(QGIS_CORE_SRCS
   network/qgshttpheaders.cpp
   network/qgsrangerequestcache.cpp
 
+  pdf/qgspdfrenderer.cpp
+
   processing/qgsprocessing.cpp
   processing/qgsprocessingalgorithm.cpp
   processing/qgsprocessingalgrunnertask.cpp
@@ -269,8 +280,10 @@ set(QGIS_CORE_SRCS
   processing/models/qgsprocessingmodelcomment.cpp
   processing/models/qgsprocessingmodelcomponent.cpp
   processing/models/qgsprocessingmodelgroupbox.cpp
+  processing/models/qgsprocessingmodelconfig.cpp
   processing/models/qgsprocessingmodelparameter.cpp
   processing/models/qgsprocessingmodeloutput.cpp
+  processing/models/qgsprocessingmodelresult.cpp
 
   providers/qgsabstractproviderconnection.cpp
   providers/qgsabstractdatabaseproviderconnection.cpp
@@ -312,6 +325,13 @@ set(QGIS_CORE_SRCS
   providers/ogr/qgsogrdbconnection.cpp
   providers/ogr/qgsogrproviderconnection.cpp
   providers/ogr/qgsogrtransaction.cpp
+
+  providers/sensorthings/qgssensorthingsconnection.cpp
+  providers/sensorthings/qgssensorthingsdataitems.cpp
+  providers/sensorthings/qgssensorthingsfeatureiterator.cpp
+  providers/sensorthings/qgssensorthingsprovider.cpp
+  providers/sensorthings/qgssensorthingsshareddata.cpp
+  providers/sensorthings/qgssensorthingsutils.cpp
 
   scalebar/qgsdoubleboxscalebarrenderer.cpp
   scalebar/qgshollowscalebarrenderer.cpp
@@ -742,6 +762,7 @@ set(QGIS_CORE_SRCS
   raster/qgsrasterlayerprofilegenerator.cpp
   raster/qgsrasterlayerrenderer.cpp
   raster/qgsrasterlayertemporalproperties.cpp
+  raster/qgsrasterlayerutils.cpp
   raster/qgsrasterminmaxorigin.cpp
   raster/qgsrasternuller.cpp
   raster/qgsrasterpipe.cpp
@@ -766,6 +787,7 @@ set(QGIS_CORE_SRCS
   raster/qgssinglebandcolordatarenderer.cpp
   raster/qgssinglebandgrayrenderer.cpp
   raster/qgssinglebandpseudocolorrenderer.cpp
+  raster/qgsrastersinglecolorrenderer.cpp
   raster/qgshillshaderenderer.cpp
 
   mesh/qgsmesh3daveraging.cpp
@@ -831,6 +853,7 @@ set(QGIS_CORE_SRCS
   labeling/qgslabelingresults.cpp
   labeling/qgslabellinesettings.cpp
   labeling/qgslabelplacementsettings.cpp
+  labeling/qgslabelpointsettings.cpp
   labeling/qgslabelobstaclesettings.cpp
   labeling/qgslabelsearchtree.cpp
   labeling/qgslabelsink.cpp
@@ -1389,6 +1412,7 @@ set(QGIS_CORE_HDRS
   elevation/qgsprofilerenderer.h
   elevation/qgsprofilerequest.h
   elevation/qgsprofilesnapping.h
+  elevation/qgsprofilesourceregistry.h
   elevation/qgsterrainprovider.h
 
   externalstorage/qgsexternalstorage.h
@@ -1489,6 +1513,7 @@ set(QGIS_CORE_HDRS
   labeling/qgslabellinesettings.h
   labeling/qgslabelobstaclesettings.h
   labeling/qgslabelplacementsettings.h
+  labeling/qgslabelpointsettings.h
   labeling/qgslabelposition.h
   labeling/qgslabelsearchtree.h
   labeling/qgslabelsink.h
@@ -1637,6 +1662,8 @@ set(QGIS_CORE_HDRS
   pal/util.h
   ${PROJECT_SOURCE_DIR}/external/rtree/include/RTree.h
 
+  pdf/qgspdfrenderer.h
+
   plot/qgsplot.h
 
   pointcloud/qgspointcloudattribute.h
@@ -1720,9 +1747,11 @@ set(QGIS_CORE_HDRS
   processing/models/qgsprocessingmodelchildparametersource.h
   processing/models/qgsprocessingmodelcomment.h
   processing/models/qgsprocessingmodelcomponent.h
+  processing/models/qgsprocessingmodelconfig.h
   processing/models/qgsprocessingmodelgroupbox.h
   processing/models/qgsprocessingmodeloutput.h
   processing/models/qgsprocessingmodelparameter.h
+  processing/models/qgsprocessingmodelresult.h
   processing/qgsprocessing.h
   processing/qgsprocessingalgorithm.h
   processing/qgsprocessingalgrunnertask.h
@@ -1800,6 +1829,13 @@ set(QGIS_CORE_HDRS
   providers/ogr/qgsogrproviderutils.h
   providers/ogr/qgsogrtransaction.h
 
+  providers/sensorthings/qgssensorthingsconnection.h
+  providers/sensorthings/qgssensorthingsdataitems.h
+  providers/sensorthings/qgssensorthingsfeatureiterator.h
+  providers/sensorthings/qgssensorthingsprovider.h
+  providers/sensorthings/qgssensorthingsshareddata.h
+  providers/sensorthings/qgssensorthingsutils.h
+
   raster/qgsrasterattributetable.h
   raster/qgsbilinearrasterresampler.h
   raster/qgsbrightnesscontrastfilter.h
@@ -1835,6 +1871,7 @@ set(QGIS_CORE_HDRS
   raster/qgsrasterlayerprofilegenerator.h
   raster/qgsrasterlayerrenderer.h
   raster/qgsrasterlayertemporalproperties.h
+  raster/qgsrasterlayerutils.h
   raster/qgsrasterminmaxorigin.h
   raster/qgsrasternuller.h
   raster/qgsrasterpipe.h
@@ -1853,6 +1890,7 @@ set(QGIS_CORE_HDRS
   raster/qgssinglebandcolordatarenderer.h
   raster/qgssinglebandgrayrenderer.h
   raster/qgssinglebandpseudocolorrenderer.h
+  raster/qgsrastersinglecolorrenderer.h
 
   scalebar/qgsdoubleboxscalebarrenderer.h
   scalebar/qgshollowscalebarrenderer.h
@@ -2065,6 +2103,15 @@ if (HAVE_OPENCL)
     )
 endif()
 
+if (HAVE_WEBENGINE)
+    set(QGIS_CORE_SRCS ${QGIS_CORE_SRCS}
+        web/qgswebenginepage.cpp
+    )
+    set(QGIS_CORE_HDRS ${QGIS_CORE_HDRS}
+        web/qgswebenginepage.h
+    )
+endif()
+
 if(MSVC)
   set_source_files_properties(
       ${CMAKE_CURRENT_BINARY_DIR}/qgsexpression_texts.cpp
@@ -2249,7 +2296,6 @@ target_include_directories(qgis_core SYSTEM PUBLIC
   ${SPATIALINDEX_INCLUDE_DIR} # before GEOS for case-insensitive filesystems
   ${SQLITE3_INCLUDE_DIR}
   ${QCA_INCLUDE_DIR}
-  ${QTKEYCHAIN_INCLUDE_DIR}
   ${${QT_VERSION_BASE}SerialPort_INCLUDE_DIRS}
   ${Protobuf_INCLUDE_DIRS}
   ${ZLIB_INCLUDE_DIRS}
@@ -2287,6 +2333,7 @@ target_include_directories(qgis_core PUBLIC
   network
   numericformats
   pal
+  pdf
   plot
   pointcloud
   pointcloud/expression
@@ -2300,6 +2347,7 @@ target_include_directories(qgis_core PUBLIC
   providers/gdal
   providers/ogr
   providers/meshmemory
+  providers/sensorthings
   raster
   renderer
   scalebar
@@ -2311,6 +2359,7 @@ target_include_directories(qgis_core PUBLIC
   validity
   vector
   vectortile
+  web
   ${CMAKE_SOURCE_DIR}/external
   ${CMAKE_SOURCE_DIR}/external/delaunator-cpp
   ${CMAKE_SOURCE_DIR}/external/nlohmann
@@ -2320,6 +2369,12 @@ target_include_directories(qgis_core PUBLIC
   ${CMAKE_SOURCE_DIR}/external/meshOptimizer
   ${CMAKE_SOURCE_DIR}/external/tinygltf
 )
+
+if (WITH_PDF4QT)
+  target_include_directories(qgis_core PRIVATE
+    ${CMAKE_SOURCE_DIR}/external/PDF4QT/Pdf4QtLibCore/sources)
+    target_link_libraries(qgis_core Pdf4QtLibCore)
+endif()
 
 if (WITH_EPT)
   target_include_directories(qgis_core PUBLIC
@@ -2411,18 +2466,27 @@ target_link_libraries(qgis_core
   ${QT_VERSION_BASE}::Concurrent
   ${OPTIONAL_QTWEBKIT}
   ${QCA_LIBRARY}
-  ${QTKEYCHAIN_LIBRARY}
   GEOS::geos_c
   GDAL::GDAL
   ${SPATIALINDEX_LIBRARY}
   EXPAT::EXPAT
   ${SQLITE3_LIBRARY}
   ${LIBZIP_LIBRARY}
-  ${Protobuf_LITE_LIBRARY}
+  $<TARGET_NAME_IF_EXISTS:protobuf::libprotobuf-lite>
   ${ZLIB_LIBRARIES}
   ${EXIV2_LIBRARY}
   PROJ::proj
 )
+
+if(BUILD_WITH_QT6)
+  target_link_libraries(qgis_core
+    Qt6Keychain::Qt6Keychain
+  )
+else()
+  target_link_libraries(qgis_core
+    qt5keychain
+  )
+endif()
 
 if (WITH_QTPRINTER)
   target_link_libraries(qgis_core ${QT_VERSION_BASE}::PrintSupport)
@@ -2508,11 +2572,6 @@ if (FORCE_STATIC_LIBS)
   endif()
 endif()
 
-if (MSVC)
-  #needed for linking to gdal which needs odbc
-  set(TARGET_LINK_LIBRARIES qgis_core odbc32 odbccp32)
-endif()
-
 if (${QT_VERSION_BASE}SerialPort_FOUND)
   target_link_libraries(qgis_core
     ${QT_VERSION_BASE}::SerialPort
@@ -2526,6 +2585,7 @@ if (${QT_VERSION_BASE}Positioning_FOUND)
 endif()
 
 target_compile_definitions(qgis_core PRIVATE "-DQT_NO_FOREACH")
+target_compile_definitions(qgis_core PRIVATE "CMAKE_SOURCE_DIR=\"${CMAKE_SOURCE_DIR}\"")
 
 # clang-tidy
 if(CLANG_TIDY_EXE)

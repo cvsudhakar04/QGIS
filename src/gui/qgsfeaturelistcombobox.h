@@ -33,7 +33,6 @@ class QgsFeatureRequest;
  * It will show up to 100 entries at a time. The entries can be chosen based on the displayExpression
  * and whenever text is typed into the combobox, the completer and popup will adjust to features matching the typed text.
  *
- * \since QGIS 3.0
  */
 class GUI_EXPORT QgsFeatureListComboBox : public QComboBox
 {
@@ -252,8 +251,15 @@ class GUI_EXPORT QgsFeatureListComboBox : public QComboBox
      */
     void currentFeatureChanged();
 
+    /**
+     * Emitted when the feature picker model changes its feature \a found state
+     * \since QGIS 3.38
+     */
+    void currentFeatureFoundChanged( bool found );
+
   private slots:
     void onCurrentTextChanged( const QString &text );
+    void onFilterLineEditCleared();
     void onFilterUpdateCompleted();
     void onLoadingChanged();
     void onItemSelected( const QModelIndex &index );

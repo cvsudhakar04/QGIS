@@ -24,6 +24,7 @@
 #include "qgsmessagelog.h"
 #include "qgsnetworkcontentfetchertask.h"
 #include "qgssettings.h"
+#include "qgsabstractcontentcache_p.h"
 
 #include <QApplication>
 #include <QCoreApplication>
@@ -481,7 +482,11 @@ QImage QgsImageCache::renderImage( const QString &path, QSize size, const bool k
     }
   }
 
-  if ( !im.hasAlphaChannel() )
+  if ( !im.hasAlphaChannel()
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+       && im.format() != QImage::Format_CMYK8888
+#endif
+     )
     im = im.convertToFormat( QImage::Format_ARGB32 );
 
   if ( opacity < 1.0 )
@@ -513,3 +518,5 @@ QImage QgsImageCache::getFrameFromReader( QImageReader &reader, int frameNumber 
   }
   return reader.read();
 }
+
+template class QgsAbstractContentCache<QgsImageCacheEntry>; // clazy:exclude=missing-qobject-macro

@@ -59,8 +59,6 @@ changed status of the widget will be saved.
     static const QgsPropertiesDefinition &propertyDefinitions();
 %Docstring
 Returns the editor widget property definitions.
-
-.. versionadded:: 3.0
 %End
 
     explicit QgsWidgetWrapper( QgsVectorLayer *vl, QWidget *editor = 0, QWidget *parent = 0 );
@@ -80,7 +78,7 @@ Access the widget managed by this wrapper
 %End
 
 
-    void setConfig( const QMap<QString, QVariant> &config );
+    void setConfig( const QVariantMap &config );
 %Docstring
 Will set the config of this wrapper to the specified config.
 
@@ -104,7 +102,7 @@ Use this inside your overridden classes to access the configuration.
 :return: the value assigned to this configuration option
 %End
 
-    QMap<QString, QVariant> config() const;
+    QVariantMap config() const;
 %Docstring
 Returns the whole config
 %End
@@ -137,8 +135,6 @@ If it cannot be used this is a hint to the caller that he may try to find
 another suitable widget type instead.
 
 :return: Validity status of this widget.
-
-.. versionadded:: 2.12
 %End
 
 
@@ -150,8 +146,6 @@ Returns a reference to the editor widget's property collection, used for data de
 .. seealso:: :py:func:`setDataDefinedProperties`
 
 .. seealso:: Property
-
-.. versionadded:: 3.0
 %End
 
     void setDataDefinedProperties( const QgsPropertyCollection &collection );
@@ -163,8 +157,6 @@ Sets the editor widget's property collection, used for data defined overrides.
 .. seealso:: :py:func:`dataDefinedProperties`
 
 .. seealso:: Property
-
-.. versionadded:: 3.0
 %End
 
     void notifyAboutToSave();

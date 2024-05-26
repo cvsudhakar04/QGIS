@@ -168,10 +168,10 @@ QgsRasterLayer *QgsRasterLayer::clone() const
   {
     options.transformContext = mDataProvider->transformContext();
   }
-  QgsRasterLayer *layer = new QgsRasterLayer( source(), name(), mProviderKey, options );
-  QgsMapLayer::clone( layer );
+  std::unique_ptr< QgsRasterLayer > layer = std::make_unique< QgsRasterLayer >( source(), name(), mProviderKey, options );
+  QgsMapLayer::clone( layer.get() );
   layer->mElevationProperties = mElevationProperties->clone();
-  layer->mElevationProperties->setParent( layer );
+  layer->mElevationProperties->setParent( layer.get() );
   layer->setMapTipTemplate( mapTipTemplate() );
   layer->setMapTipsEnabled( mapTipsEnabled() );
 
@@ -182,8 +182,14 @@ QgsRasterLayer *QgsRasterLayer::clone() const
       layer->pipe()->set( mPipe->at( i )->clone() );
   }
   layer->pipe()->setDataDefinedProperties( mPipe->dataDefinedProperties() );
+  layer->setResamplingStage( mPipe->resamplingStage() );
+  if ( mDataProvider && layer->dataProvider() )
+  {
+    layer->dataProvider()->setZoomedInResamplingMethod( mDataProvider->zoomedInResamplingMethod() );
+    layer->dataProvider()->setZoomedOutResamplingMethod( mDataProvider->zoomedOutResamplingMethod() );
+  }
 
-  return layer;
+  return layer.release();
 }
 
 QgsAbstractProfileGenerator *QgsRasterLayer::createProfileGenerator( const QgsProfileRequest &request )
@@ -592,7 +598,7 @@ QPixmap QgsRasterLayer::paletteAsPixmap( int bandNumber )
     {
       QgsDebugMsgLevel( QStringLiteral( "....got color ramp item list" ), 4 );
       myShader.setColorRampItemList( myColorRampItemList );
-      myShader.setColorRampType( QgsColorRampShader::Discrete );
+      myShader.setColorRampType( Qgis::ShaderInterpolationMethod::Discrete );
       // Draw image
       const int mySize = 100;
       QPixmap myPalettePixmap( mySize, mySize );
@@ -894,7 +900,7 @@ void QgsRasterLayer::setDataProvider( QString const &provider, const QgsDataProv
           // TODO: this should go somewhere else
           QgsRasterShader *shader = new QgsRasterShader();
           QgsColorRampShader *colorRampShader = new QgsColorRampShader();
-          colorRampShader->setColorRampType( QgsColorRampShader::Interpolated );
+          colorRampShader->setColorRampType( Qgis::ShaderInterpolationMethod::Linear );
           colorRampShader->setColorRampItemList( colorTable );
           shader->setRasterShaderFunction( colorRampShader );
           r->setShader( shader );
@@ -1369,7 +1375,7 @@ void QgsRasterLayer::setContrastEnhancement( QgsContrastEnhancement::ContrastEnh
     {
       return;
     }
-    myBands << myGrayRenderer->grayBand();
+    myBands << myGrayRenderer->inputBand();
     myRasterRenderer = myGrayRenderer;
     myMinMaxOrigin = myGrayRenderer->minMaxOrigin();
   }
@@ -1391,7 +1397,7 @@ void QgsRasterLayer::setContrastEnhancement( QgsContrastEnhancement::ContrastEnh
     {
       return;
     }
-    myBands << myPseudoColorRenderer->band();
+    myBands << myPseudoColorRenderer->inputBand();
     myRasterRenderer = myPseudoColorRenderer;
     myMinMaxOrigin = myPseudoColorRenderer->minMaxOrigin();
   }
@@ -1442,7 +1448,7 @@ void QgsRasterLayer::setContrastEnhancement( QgsContrastEnhancement::ContrastEnh
           QgsColorRampShader *colorRampShader = dynamic_cast<QgsColorRampShader *>( myPseudoColorRenderer->shader()->rasterShaderFunction() );
           if ( colorRampShader )
           {
-            colorRampShader->classifyColorRamp( myPseudoColorRenderer->band(), extent, myPseudoColorRenderer->input() );
+            colorRampShader->classifyColorRamp( myPseudoColorRenderer->inputBand(), extent, myPseudoColorRenderer->input() );
           }
         }
       }
@@ -1573,7 +1579,7 @@ void QgsRasterLayer::refreshRenderer( QgsRasterRenderer *rasterRenderer, const Q
       mLastRectangleUsedByRefreshContrastEnhancementIfNeeded = extent;
       double min;
       double max;
-      computeMinMax( sbpcr->band(),
+      computeMinMax( sbpcr->inputBand(),
                      rasterRenderer->minMaxOrigin(),
                      rasterRenderer->minMaxOrigin().limits(), extent,
                      static_cast<int>( SAMPLE_SIZE ), min, max );
@@ -1585,7 +1591,7 @@ void QgsRasterLayer::refreshRenderer( QgsRasterRenderer *rasterRenderer, const Q
         QgsColorRampShader *colorRampShader = dynamic_cast<QgsColorRampShader *>( sbpcr->shader()->rasterShaderFunction() );
         if ( colorRampShader )
         {
-          colorRampShader->classifyColorRamp( sbpcr->band(), extent, rasterRenderer->input() );
+          colorRampShader->classifyColorRamp( sbpcr->inputBand(), extent, rasterRenderer->input() );
         }
       }
 
@@ -1598,7 +1604,7 @@ void QgsRasterLayer::refreshRenderer( QgsRasterRenderer *rasterRenderer, const Q
         QgsColorRampShader *colorRampShader = dynamic_cast<QgsColorRampShader *>( r->shader()->rasterShaderFunction() );
         if ( colorRampShader )
         {
-          colorRampShader->classifyColorRamp( sbpcr->band(), extent, rasterRenderer->input() );
+          colorRampShader->classifyColorRamp( sbpcr->inputBand(), extent, rasterRenderer->input() );
         }
       }
 
@@ -1849,17 +1855,19 @@ bool QgsRasterLayer::writeSld( QDomNode &node, QDomDocument &doc, QString &error
       userStyleElem.appendChild( nameElem );
     }
 
-    if ( !abstract().isEmpty() )
+    const QString abstract = !metadata().abstract().isEmpty() ? metadata().abstract() : serverProperties()->abstract();
+    if ( !abstract.isEmpty() )
     {
       QDomElement abstractElem = doc.createElement( QStringLiteral( "sld:Abstract" ) );
-      abstractElem.appendChild( doc.createTextNode( abstract() ) );
+      abstractElem.appendChild( doc.createTextNode( abstract ) );
       userStyleElem.appendChild( abstractElem );
     }
 
-    if ( !title().isEmpty() )
+    const QString title = !metadata().title().isEmpty() ? metadata().title() : serverProperties()->title();
+    if ( !title.isEmpty() )
     {
       QDomElement titleElem = doc.createElement( QStringLiteral( "sld:Title" ) );
-      titleElem.appendChild( doc.createTextNode( title() ) );
+      titleElem.appendChild( doc.createTextNode( title ) );
       userStyleElem.appendChild( titleElem );
     }
 

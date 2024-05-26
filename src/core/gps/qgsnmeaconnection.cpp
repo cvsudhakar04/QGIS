@@ -60,15 +60,24 @@ void QgsNmeaConnection::parseData()
 
   if ( numBytes >= 6 )
   {
+    QgsDebugMsgLevel( QStringLiteral( "Got %1 NMEA bytes" ).arg( numBytes ), 3 );
+    QgsDebugMsgLevel( QStringLiteral( "Current NMEA device status is %1" ).arg( mStatus ), 3 );
     if ( mStatus != GPSDataReceived )
     {
+      QgsDebugMsgLevel( QStringLiteral( "Setting device status to DataReceived" ), 3 );
       mStatus = DataReceived;
     }
 
     //append new data to the remaining results from last parseData() call
     mStringBuffer.append( mSource->read( numBytes ) );
     processStringBuffer();
-    emit stateChanged( mLastGPSInformation );
+    QgsDebugMsgLevel( QStringLiteral( "Processed buffer" ), 3 );
+
+    QgsDebugMsgLevel( QStringLiteral( "New status is %1" ).arg( mStatus ), 3 );
+    if ( mStatus == GPSDataReceived )
+    {
+      emit stateChanged( mLastGPSInformation );
+    }
   }
 }
 
@@ -367,6 +376,23 @@ void QgsNmeaConnection::processRmcSentence( const char *data, int len )
       mLastGPSInformation.quality = static_cast<int>( Qgis::GpsQualityIndicator::Invalid );
       mLastGPSInformation.qualityIndicator = Qgis::GpsQualityIndicator::Invalid;
     }
+  }
+
+  if ( result.navstatus == 'S' )
+  {
+    mLastGPSInformation.setNavigationStatus( Qgis::GpsNavigationStatus::Safe );
+  }
+  else if ( result.navstatus == 'C' )
+  {
+    mLastGPSInformation.setNavigationStatus( Qgis::GpsNavigationStatus::Caution );
+  }
+  else if ( result.navstatus == 'U' )
+  {
+    mLastGPSInformation.setNavigationStatus( Qgis::GpsNavigationStatus::Unsafe );
+  }
+  else
+  {
+    mLastGPSInformation.setNavigationStatus( Qgis::GpsNavigationStatus::NotValid );
   }
 }
 

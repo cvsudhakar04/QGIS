@@ -21,6 +21,7 @@
 #include <QColor>
 #include <QPainter>
 #include <QImage>
+#include <QImageReader>
 #include <QCryptographicHash>
 #include <QByteArray>
 #include <QDebug>
@@ -282,8 +283,8 @@ bool QgsRenderChecker::runTest( const QString &testName,
   //
   // Load the expected result pixmap
   //
-  const QImage myExpectedImage( mExpectedImageFile );
-  if ( myExpectedImage.isNull() )
+  const QImageReader expectedImageReader( mExpectedImageFile );
+  if ( !expectedImageReader.canRead() )
   {
     qDebug() << "QgsRenderChecker::runTest failed - Could not load expected image from " << mExpectedImageFile;
     mReport = "<table>"
@@ -294,13 +295,15 @@ bool QgsRenderChecker::runTest( const QString &testName,
     performPostTestActions( flags );
     return mResult;
   }
-  mMatchTarget = myExpectedImage.width() * myExpectedImage.height();
+
+  const QSize expectedSize = expectedImageReader.size();
+  mMatchTarget = expectedSize.width() * expectedSize.height();
   //
   // Now render our layers onto a pixmap
   //
   mMapSettings.setBackgroundColor( qRgb( 152, 219, 249 ) );
   mMapSettings.setFlag( Qgis::MapSettingsFlag::Antialiasing );
-  mMapSettings.setOutputSize( QSize( myExpectedImage.width(), myExpectedImage.height() ) / mMapSettings.devicePixelRatio() );
+  mMapSettings.setOutputSize( expectedSize / mMapSettings.devicePixelRatio() );
 
   QElapsedTimer myTime;
   myTime.start();
@@ -311,46 +314,45 @@ bool QgsRenderChecker::runTest( const QString &testName,
 
   mElapsedTime = myTime.elapsed();
 
-  QImage myImage = job.renderedImage();
-  Q_ASSERT( myImage.devicePixelRatioF() == mMapSettings.devicePixelRatio() );
-
-  //
-  // Save the pixmap to disk so the user can make a
-  // visual assessment if needed
-  //
   mRenderedImageFile = QDir::tempPath() + '/' + testName + "_result.png";
 
-  myImage.setDotsPerMeterX( myExpectedImage.dotsPerMeterX() );
-  myImage.setDotsPerMeterY( myExpectedImage.dotsPerMeterY() );
-  if ( ! myImage.save( mRenderedImageFile, "PNG", 100 ) )
-  {
-    qDebug() << "QgsRenderChecker::runTest failed - Could not save rendered image to " << mRenderedImageFile;
-    mReport = "<table>"
-              "<tr><td>Test Result:</td><td>Expected Result:</td></tr>\n"
-              "<tr><td>Nothing rendered</td>\n<td>Failed because Rendered "
-              "Image File could not be saved.</td></tr></table>\n";
-    mMarkdownReport = QStringLiteral( "Failed because rendered image file could not be saved to %1\n" ).arg( mRenderedImageFile );
+  mRenderedImage = job.renderedImage();
+  Q_ASSERT( mRenderedImage.devicePixelRatioF() == mMapSettings.devicePixelRatio() );
+  const bool res = compareImages( testName, mismatchCount, QString(), flags );
 
-    performPostTestActions( flags );
-    return mResult;
+  if ( ! res )
+  {
+    // If test failed, save the pixmap to disk so the user can make a
+    // visual assessment
+    if ( ! mRenderedImage.save( mRenderedImageFile, "PNG", 100 ) )
+    {
+      qDebug() << "QgsRenderChecker::runTest failed - Could not save rendered image to " << mRenderedImageFile;
+      mReport = "<table>"
+                "<tr><td>Test Result:</td><td>Expected Result:</td></tr>\n"
+                "<tr><td>Nothing rendered</td>\n<td>Failed because Rendered "
+                "Image File could not be saved.</td></tr></table>\n";
+      mMarkdownReport = QStringLiteral( "Failed because rendered image file could not be saved to %1\n" ).arg( mRenderedImageFile );
+
+      performPostTestActions( flags );
+      return mResult;
+    }
+
+    //create a world file to go with the image...
+    QFile wldFile( QDir::tempPath() + '/' + testName + "_result.wld" );
+    if ( wldFile.open( QIODevice::WriteOnly | QIODevice::Truncate ) )
+    {
+      const QgsRectangle r = mMapSettings.extent();
+
+      QTextStream stream( &wldFile );
+      stream << QStringLiteral( "%1\r\n0 \r\n0 \r\n%2\r\n%3\r\n%4\r\n" )
+             .arg( qgsDoubleToString( mMapSettings.mapUnitsPerPixel() ),
+                   qgsDoubleToString( -mMapSettings.mapUnitsPerPixel() ),
+                   qgsDoubleToString( r.xMinimum() + mMapSettings.mapUnitsPerPixel() / 2.0 ),
+                   qgsDoubleToString( r.yMaximum() - mMapSettings.mapUnitsPerPixel() / 2.0 ) );
+    }
   }
 
-  //create a world file to go with the image...
-
-  QFile wldFile( QDir::tempPath() + '/' + testName + "_result.wld" );
-  if ( wldFile.open( QIODevice::WriteOnly | QIODevice::Truncate ) )
-  {
-    const QgsRectangle r = mMapSettings.extent();
-
-    QTextStream stream( &wldFile );
-    stream << QStringLiteral( "%1\r\n0 \r\n0 \r\n%2\r\n%3\r\n%4\r\n" )
-           .arg( qgsDoubleToString( mMapSettings.mapUnitsPerPixel() ),
-                 qgsDoubleToString( -mMapSettings.mapUnitsPerPixel() ),
-                 qgsDoubleToString( r.xMinimum() + mMapSettings.mapUnitsPerPixel() / 2.0 ),
-                 qgsDoubleToString( r.yMaximum() - mMapSettings.mapUnitsPerPixel() / 2.0 ) );
-  }
-
-  return compareImages( testName, mismatchCount, QString(), flags );
+  return res;
 }
 
 
@@ -423,7 +425,7 @@ bool QgsRenderChecker::compareImages( const QString &testName, const QString &re
     return string.left( firstNonTagIndex ) + string.at( firstNonTagIndex ).toUpper() + string.mid( firstNonTagIndex + 1 );
   };
 
-  QImage myResultImage( mRenderedImageFile );
+  QImage myResultImage = mRenderedImage.isNull() ? QImage( mRenderedImageFile ) : mRenderedImage;
   if ( myResultImage.isNull() )
   {
     qDebug() << "QgsRenderChecker::runTest failed - Could not load rendered image from " << mRenderedImageFile;
@@ -549,8 +551,8 @@ bool QgsRenderChecker::compareImages( const QString &testName, const QString &re
                                              "<tr>"
                                              "<td colspan=3>Compare %5 and %6</td>"
                                              "</tr>\n<tr>"
-                                             "<td align=center><img src=\"%1\"></td>\n"
                                              "<td align=center><img width=%3 height=%4 src=\"%2\"></td>\n"
+                                             "<td align=center><img src=\"%1\"></td>\n"
                                              "</tr>"
                                              "</table>\n" )
                                            .arg(
@@ -596,7 +598,32 @@ bool QgsRenderChecker::compareImages( const QString &testName, const QString &re
     myResultImage = myResultImage.convertToFormat( QImage::Format_ARGB32 );
     expectedImage = expectedImage.convertToFormat( QImage::Format_ARGB32 );
   }
+  if ( expectedImage.format() != QImage::Format_RGB32
+       && expectedImage.format() != QImage::Format_ARGB32
+       && expectedImage.format() != QImage::Format_ARGB32_Premultiplied )
+  {
+    mReport += QLatin1String( "<tr><td colspan=3>" );
+    mReport += QStringLiteral( "<font color=red>Expected image for %1 is not a compatible format (%2). Must be 32 bit RGB format.</font>" ).arg( testName, qgsEnumValueToKey( expectedImage.format() ) );
+    mReport += QLatin1String( "</td></tr>" );
+    mReport += myImagesString;
 
+    mMarkdownReport += QStringLiteral( "Failed because expected image has an incompatible format - %1 (32 bit format is expected)\n" ).arg( qgsEnumValueToKey( expectedImage.format() ) );
+    performPostTestActions( flags );
+    return mResult;
+  }
+  if ( myResultImage.format() != QImage::Format_RGB32
+       && myResultImage.format() != QImage::Format_ARGB32
+       && myResultImage.format() != QImage::Format_ARGB32_Premultiplied )
+  {
+    mReport += QLatin1String( "<tr><td colspan=3>" );
+    mReport += QStringLiteral( "<font color=red>Rendered image for %1 is not a compatible format (%2). Must be 32 bit RGB format.</font>" ).arg( testName, qgsEnumValueToKey( myResultImage.format() ) );
+    mReport += QLatin1String( "</td></tr>" );
+    mReport += myImagesString;
+
+    mMarkdownReport += QStringLiteral( "Failed because rendered image has an incompatible format - %1 (32 bit format is expected)\n" ).arg( qgsEnumValueToKey( myResultImage.format() ) );
+    performPostTestActions( flags );
+    return mResult;
+  }
 
   //
   // Now iterate through them counting how many
@@ -605,6 +632,8 @@ bool QgsRenderChecker::compareImages( const QString &testName, const QString &re
 
   const int maxHeight = std::min( expectedImage.height(), myResultImage.height() );
   const int maxWidth = std::min( expectedImage.width(), myResultImage.width() );
+
+  const int maskWidth = maskImage.width();
 
   mMismatchCount = 0;
   const int colorTolerance = static_cast< int >( mColorTolerance );
@@ -617,8 +646,9 @@ bool QgsRenderChecker::compareImages( const QString &testName, const QString &re
 
     for ( int x = 0; x < maxWidth; ++x )
     {
-      const int maskTolerance = ( maskScanline && maskImage.width() > x ) ? qRed( maskScanline[ x ] ) : 0;
-      const int pixelTolerance = std::max( colorTolerance, maskTolerance );
+      const int pixelTolerance = maskScanline
+                                 ? std::max( colorTolerance, ( maskWidth > x ) ? qRed( maskScanline[ x ] ) : 0 )
+                                 : colorTolerance;
       if ( pixelTolerance == 255 )
       {
         //skip pixel

@@ -701,6 +701,33 @@ class CORE_EXPORT Qgis
     Q_FLAG( BrowserItemCapabilities )
 
     /**
+     * Capabilities for data item providers.
+     *
+     * \note Prior to QGIS 3.36 this was available as QgsDataProvider::DataCapability
+     *
+     * \since QGIS 3.36
+     */
+    enum class DataItemProviderCapability SIP_MONKEYPATCH_SCOPEENUM_UNNEST( QgsDataProvider, DataCapability ) : int SIP_ENUM_BASETYPE( IntFlag )
+    {
+      NoCapabilities SIP_MONKEYPATCH_COMPAT_NAME( NoDataCapabilities ) = 0, //!< No capabilities
+      Files SIP_MONKEYPATCH_COMPAT_NAME( File ) = 1, //!< Can provides items which corresponds to files
+      Directories SIP_MONKEYPATCH_COMPAT_NAME( Dir ) = 1 << 1, //!< Can provides items which corresponds to directories
+      Databases SIP_MONKEYPATCH_COMPAT_NAME( Database ) = 1 << 2, //!< Can provides items which corresponds to databases
+      NetworkSources SIP_MONKEYPATCH_COMPAT_NAME( Net ) = 1 << 3, //!< Network/internet source
+    };
+    Q_ENUM( DataItemProviderCapability )
+
+    /**
+     * Capabilities for data item providers.
+     *
+     * \note Prior to QGIS 3.36 this was available as QgsDataProvider::DataCapabilities
+     *
+     * \since QGIS 3.36
+     */
+    Q_DECLARE_FLAGS( DataItemProviderCapabilities, DataItemProviderCapability ) SIP_MONKEYPATCH_FLAGS_UNNEST( QgsDataProvider, DataCapabilities )
+    Q_FLAG( DataItemProviderCapabilities )
+
+    /**
      * Browser item layer types
      *
      * \since QGIS 3.20
@@ -739,7 +766,7 @@ class CORE_EXPORT Qgis
 
     /**
      * Different methods of HTTP requests
-     * \since 3.22
+     * \since QGIS 3.22
      */
     enum class HttpMethod : int
     {
@@ -877,6 +904,18 @@ class CORE_EXPORT Qgis
     Q_ENUM( LabelOverlapHandling )
 
     /**
+     * Label prioritization.
+     *
+     * \since QGIS 3.38
+     */
+    enum class LabelPrioritization : int
+    {
+      PreferCloser, //!< Prefer closer labels, falling back to alternate positions before larger distances
+      PreferPositionOrdering, //!< Prefer labels follow position ordering, falling back to more distance labels before alternate positions
+    };
+    Q_ENUM( LabelPrioritization )
+
+    /**
      * Placement modes which determine how label candidates are generated for a feature.
      *
      * \note Prior to QGIS 3.26 this was available as QgsPalLayerSettings::Placement
@@ -918,6 +957,7 @@ class CORE_EXPORT Qgis
       BottomMiddle, //!< Label directly below point
       BottomSlightlyRight, //!< Label below point, slightly right of center
       BottomRight, //!< Label on bottom right of point
+      OverPoint, //!< Label directly centered over point (since QGIS 3.38)
     };
     Q_ENUM( LabelPredefinedPointPosition )
 
@@ -1086,6 +1126,36 @@ class CORE_EXPORT Qgis
     Q_FLAG( SublayerFlags )
 
     /**
+     * Color ramp shader interpolation methods.
+     *
+     * \note Prior to QGIS 3.38 this was available as QgsColorRampShader::Type
+     *
+     * \since QGIS 3.38
+     */
+    enum class ShaderInterpolationMethod SIP_MONKEYPATCH_SCOPEENUM_UNNEST( QgsColorRampShader, Type ) : int
+      {
+      Linear SIP_MONKEYPATCH_COMPAT_NAME( Interpolated ) = 0, //!< Interpolates the color between two class breaks linearly
+      Discrete = 1, //!< Assigns the color of the higher class for every pixel between two class breaks
+      Exact = 2, //!< Assigns the color of the exact matching value in the color ramp item list
+    };
+    Q_ENUM( ShaderInterpolationMethod )
+
+    /**
+     * Color ramp shader classification methods.
+     *
+     * \note Prior to QGIS 3.38 this was available as QgsColorRampShader::ClassificationMode
+     *
+     * \since QGIS 3.38
+     */
+    enum class ShaderClassificationMethod SIP_MONKEYPATCH_SCOPEENUM_UNNEST( QgsColorRampShader, ClassificationMode ) : int
+      {
+      Continuous = 1, //!< Uses breaks from color palette
+      EqualInterval = 2, //!< Uses equal interval
+      Quantile = 3, //!< Uses quantile (i.e. equal pixel) count
+    };
+    Q_ENUM( ShaderClassificationMethod )
+
+    /**
      * Raster pipe interface roles.
      *
      * \since QGIS 3.22
@@ -1124,6 +1194,7 @@ class CORE_EXPORT Qgis
     enum class RasterRendererFlag : int SIP_ENUM_BASETYPE( IntFlag )
     {
       InternalLayerOpacityHandling = 1 << 0, //!< The renderer internally handles the raster layer's opacity, so the default layer level opacity handling should not be applied.
+      UseNoDataForOutOfRangePixels = 1 << 1, //!< Out of range pixels (eg those values outside of the rendered map's z range filter) should be set using additional nodata values instead of additional transparency values (since QGIS 3.38)
     };
 
     /**
@@ -1135,6 +1206,25 @@ class CORE_EXPORT Qgis
 
     Q_ENUM( RasterRendererFlag )
     Q_FLAG( RasterRendererFlags )
+
+    /**
+     * Raster renderer capabilities.
+     *
+     * \since QGIS 3.48
+     */
+    enum class RasterRendererCapability : int SIP_ENUM_BASETYPE( IntFlag )
+    {
+      UsesMultipleBands = 1 << 0, //!< The renderer utilizes multiple raster bands for color data (note that alpha bands are not considered for this capability)
+    };
+    Q_ENUM( RasterRendererCapability )
+
+    /**
+     * Raster renderer capabilities.
+     *
+     * \since QGIS 3.38
+     */
+    Q_DECLARE_FLAGS( RasterRendererCapabilities, RasterRendererCapability )
+    Q_FLAG( RasterRendererCapabilities )
 
     /**
      * \brief The RasterAttributeTableFieldUsage enum represents the usage of a Raster Attribute Table field.
@@ -1475,6 +1565,20 @@ class CORE_EXPORT Qgis
     Q_ENUM( GpsQualityIndicator )
 
     /**
+     * GPS navigation status.
+     *
+     * \since QGIS 3.38
+     */
+    enum class GpsNavigationStatus : int
+    {
+      NotValid, //!< Navigation status not valid
+      Safe, //!< Safe
+      Caution, //!< Caution
+      Unsafe, //!< Unsafe
+    };
+    Q_ENUM( GpsNavigationStatus );
+
+    /**
      * GPS information component.
      *
      * \since QGIS 3.30
@@ -1800,6 +1904,8 @@ class CORE_EXPORT Qgis
     enum class DataProviderFlag : int SIP_ENUM_BASETYPE( IntFlag )
     {
       IsBasemapSource = 1 << 1, //!< Associated source should be considered a 'basemap' layer. See Qgis::MapLayerProperty::IsBasemapLayer.
+      FastExtent2D = 1 << 2, //!< Provider's 2D extent retrieval via QgsDataProvider::extent() is always guaranteed to be trivial/fast to calculate. Since QGIS 3.38.
+      FastExtent3D = 1 << 3, //!< Provider's 3D extent retrieval via QgsDataProvider::extent3D() is always guaranteed to be trivial/fast to calculate. Since QGIS 3.38.
     };
     //! Data provider flags
     Q_DECLARE_FLAGS( DataProviderFlags, DataProviderFlag )
@@ -2096,6 +2202,8 @@ class CORE_EXPORT Qgis
       FixedTemporalRange SIP_MONKEYPATCH_COMPAT_NAME( ModeFixedTemporalRange ) = 0, //!< Mode when temporal properties have fixed start and end datetimes.
       TemporalRangeFromDataProvider SIP_MONKEYPATCH_COMPAT_NAME( ModeTemporalRangeFromDataProvider ) = 1, //!< Mode when raster layer delegates temporal range handling to the dataprovider.
       RedrawLayerOnly SIP_MONKEYPATCH_COMPAT_NAME( ModeRedrawLayerOnly ) = 2, //!< Redraw the layer when temporal range changes, but don't apply any filtering. Useful when raster symbology expressions depend on the time range. (since QGIS 3.22)
+      FixedRangePerBand = 3, //!< Layer has a fixed temporal range per band (since QGIS 3.38)
+      RepresentsTemporalValues = 4, //!< Pixel values represent an datetime
     };
     Q_ENUM( RasterTemporalMode )
 
@@ -3095,6 +3203,19 @@ class CORE_EXPORT Qgis
     Q_ENUM( ProcessingModelChildParameterSource )
 
     /**
+     * Reflects the status of a child algorithm in a Processing model.
+     *
+     * \since QGIS 3.38
+     */
+    enum class ProcessingModelChildAlgorithmExecutionStatus : int
+    {
+      NotExecuted, //!< Child has not been executed
+      Success, //!< Child was successfully executed
+      Failed, //!< Child encountered an error while executing
+    };
+    Q_ENUM( ProcessingModelChildAlgorithmExecutionStatus )
+
+    /**
      * Defines the type of input layer for a Processing TIN input.
      *
      * \note Prior to QGIS 3.36 this was available as QgsProcessingParameterTinInputLayers::Type
@@ -3155,6 +3276,21 @@ class CORE_EXPORT Qgis
     Q_ENUM( FieldDomainMergePolicy )
 
     /**
+     * Duplicate policy for fields.
+     *
+     * When a feature is duplicated, defines how the value of attributes are computed.
+     *
+     * \since QGIS 3.38
+     */
+    enum class FieldDuplicatePolicy : int
+    {
+      DefaultValue, //!< Use default field value
+      Duplicate, //!< Duplicate original value
+      UnsetField, //!< Clears the field value so that the data provider backend will populate using any backend triggers or similar logic (since QGIS 3.30)
+    };
+    Q_ENUM( FieldDuplicatePolicy )
+
+    /**
      * Types of field domain
      *
      * \since QGIS 3.26
@@ -3204,6 +3340,47 @@ class CORE_EXPORT Qgis
       Centroid, //!< Clamp just centroid of feature
     };
     Q_ENUM( AltitudeBinding )
+
+    /**
+     * Describes how the limits of a range are handled.
+     *
+     * \since QGIS 3.38
+     */
+    enum class RangeLimits : int
+    {
+      IncludeBoth = 0, //!< Both lower and upper values are included in the range
+      IncludeLowerExcludeUpper, //!< Lower value is included in the range, upper value is excluded
+      ExcludeLowerIncludeUpper, //!< Lower value is excluded from the range, upper value in inccluded
+      ExcludeBoth, //!< Both lower and upper values are excluded from the range
+    };
+    Q_ENUM( RangeLimits )
+
+    /**
+     * Raster layer elevation modes.
+     *
+     * \since QGIS 3.38
+     */
+    enum class RasterElevationMode : int
+    {
+      FixedElevationRange = 0, //!< Layer has a fixed elevation range
+      RepresentsElevationSurface = 1, //!< Pixel values represent an elevation surface
+      FixedRangePerBand = 2, //!< Layer has a fixed (manually specified) elevation range per band
+      DynamicRangePerBand = 3, //!< Layer has a elevation range per band, calculated dynamically from an expression
+    };
+    Q_ENUM( RasterElevationMode )
+
+    /**
+     * Mesh layer elevation modes.
+     *
+     * \since QGIS 3.38
+     */
+    enum class MeshElevationMode : int
+    {
+      FixedElevationRange = 0, //!< Layer has a fixed elevation range
+      FromVertices = 1, //!< Elevation should be taken from mesh vertices
+      FixedRangePerGroup = 2, //!< Layer has a fixed (manually specified) elevation range per group
+    };
+    Q_ENUM( MeshElevationMode )
 
     /**
      * Between line constraints which can be enabled
@@ -4768,8 +4945,27 @@ class CORE_EXPORT Qgis
     Q_FLAG( RasterBandStatistics )
 
     /**
+     * OGC SensorThings API entity types.
+     *
+     * \since QGIS 3.36
+     */
+    enum class SensorThingsEntity : int
+    {
+      Invalid, //!< An invalid/unknown entity
+      Thing, //!< A Thing is an object of the physical world (physical things) or the information world (virtual things) that is capable of being identified and integrated into communication networks
+      Location, //!< A Location entity locates the Thing or the Things it associated with. A Thing’s Location entity is defined as the last known location of the Thing
+      HistoricalLocation, //!< A Thing’s HistoricalLocation entity set provides the times of the current (i.e., last known) and previous locations of the Thing
+      Datastream, //!< A Datastream groups a collection of Observations measuring the same ObservedProperty and produced by the same Sensor
+      Sensor, //!< A Sensor is an instrument that observes a property or phenomenon with the goal of producing an estimate of the value of the property
+      ObservedProperty, //!< An ObservedProperty specifies the phenomenon of an Observation
+      Observation, //!< An Observation is the act of measuring or otherwise determining the value of a property
+      FeatureOfInterest, //!< In the context of the Internet of Things, many Observations’ FeatureOfInterest can be the Location of the Thing. For example, the FeatureOfInterest of a wifi-connect thermostat can be the Location of the thermostat (i.e., the living room where the thermostat is located in). In the case of remote sensing, the FeatureOfInterest can be the geographical area or volume that is being sensed
+      MultiDatastream, //!< A MultiDatastream groups a collection of Observations and the Observations in a MultiDatastream have a complex result type. Implemented in the SensorThings version 1.1 "MultiDatastream extension". (Since QGIS 3.38)
+    };
+    Q_ENUM( SensorThingsEntity )
+
+    /**
      * Identify search radius in mm
-     * \since QGIS 2.3
      */
     static const double DEFAULT_SEARCH_RADIUS_MM;
 
@@ -4780,19 +4976,16 @@ class CORE_EXPORT Qgis
      * Default highlight color.  The transparency is expected to only be applied to polygon
      * fill. Lines and outlines are rendered opaque.
      *
-     *  \since QGIS 2.3
      */
     static const QColor DEFAULT_HIGHLIGHT_COLOR;
 
     /**
      * Default highlight buffer in mm.
-     *  \since QGIS 2.3
      */
     static const double DEFAULT_HIGHLIGHT_BUFFER_MM;
 
     /**
      * Default highlight line/stroke minimum width in mm.
-     * \since QGIS 2.3
      */
     static const double DEFAULT_HIGHLIGHT_MIN_WIDTH_MM;
 
@@ -4800,14 +4993,12 @@ class CORE_EXPORT Qgis
      * Fudge factor used to compare two scales. The code is often going from scale to scale
      *  denominator. So it looses precision and, when a limit is inclusive, can lead to errors.
      *  To avoid that, use this factor instead of using <= or >=.
-     * \since QGIS 2.15
      */
     static const double SCALE_PRECISION;
 
     /**
      * Default Z coordinate value.
      * This value have to be assigned to the Z coordinate for the vertex.
-     * \since QGIS 3.0
      */
     static const double DEFAULT_Z_COORDINATE;
 
@@ -4821,19 +5012,16 @@ class CORE_EXPORT Qgis
     /**
      * UI scaling factor. This should be applied to all widget sizes obtained from font metrics,
      * to account for differences in the default font sizes across different platforms.
-     *  \since QGIS 3.0
      */
     static const double UI_SCALE_FACTOR;
 
     /**
      * Default snapping distance tolerance.
-     *  \since QGIS 3.0
      */
     static const double DEFAULT_SNAP_TOLERANCE;
 
     /**
      * Default snapping distance units.
-     *  \since QGIS 3.0
      */
     static const Qgis::MapToolUnit DEFAULT_SNAP_UNITS;
 
@@ -4911,6 +5099,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS( Qgis::ProfileGeneratorFlags )
 Q_DECLARE_OPERATORS_FOR_FLAGS( Qgis::ProjectCapabilities )
 Q_DECLARE_OPERATORS_FOR_FLAGS( Qgis::ProjectReadFlags )
 Q_DECLARE_OPERATORS_FOR_FLAGS( Qgis::RasterRendererFlags )
+Q_DECLARE_OPERATORS_FOR_FLAGS( Qgis::RasterRendererCapabilities )
 Q_DECLARE_OPERATORS_FOR_FLAGS( Qgis::RasterTemporalCapabilityFlags )
 Q_DECLARE_OPERATORS_FOR_FLAGS( Qgis::RelationshipCapabilities )
 Q_DECLARE_OPERATORS_FOR_FLAGS( Qgis::RenderContextFlags )
@@ -4949,6 +5138,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS( Qgis::ProcessingAlgorithmFlags )
 Q_DECLARE_OPERATORS_FOR_FLAGS( Qgis::ProcessingFeatureSourceFlags )
 Q_DECLARE_OPERATORS_FOR_FLAGS( Qgis::ProcessingParameterTypeFlags )
 Q_DECLARE_OPERATORS_FOR_FLAGS( Qgis::ProcessingParameterFlags )
+Q_DECLARE_OPERATORS_FOR_FLAGS( Qgis::DataItemProviderCapabilities )
 
 
 // hack to workaround warnings when casting void pointers
@@ -4964,7 +5154,6 @@ Q_DECLARE_OPERATORS_FOR_FLAGS( Qgis::ProcessingParameterFlags )
  * for the lifetime of QgsSignalBlocker object.
  * \see whileBlocking()
  * \note not available in Python bindings
- * \since QGIS 2.16
  */
 // based on Boojum's code from http://stackoverflow.com/questions/3556687/prevent-firing-signals-in-qt
 template<class Object> class QgsSignalBlocker SIP_SKIP SIP_SKIP // clazy:exclude=rule-of-three
@@ -5006,7 +5195,6 @@ template<class Object> class QgsSignalBlocker SIP_SKIP SIP_SKIP // clazy:exclude
  *
  * \see QgsSignalBlocker
  * \note not available in Python bindings
- * \since QGIS 2.16
  */
 // based on Boojum's code from http://stackoverflow.com/questions/3556687/prevent-firing-signals-in-qt
 template<class Object> inline QgsSignalBlocker<Object> whileBlocking( Object *object ) SIP_SKIP SIP_SKIP
@@ -5084,7 +5272,7 @@ inline bool qgsNanCompatibleEquals( double a, double b )
  * \param a first number
  * \param b second number
  * \param epsilon maximum difference allowable between numbers
- * \since 3.36
+ * \since QGIS 3.36
  */
 template<typename T>
 inline bool qgsNumberNear( T a, T b, T epsilon = std::numeric_limits<T>::epsilon() * 4 )
@@ -5145,7 +5333,6 @@ inline bool qgsDoubleNearSig( double a, double b, int significantDigits = 10 )
 /**
  * Returns a double \a number, rounded (as close as possible) to the specified number of \a places.
  *
- * \since QGIS 3.0
  */
 inline double qgsRound( double number, int places )
 {
@@ -5379,6 +5566,14 @@ template<class T> QString qgsFlagValueToKeys( const T &value, bool *returnOk = n
  */
 template<class T> T qgsFlagKeysToValue( const QString &keys, const T &defaultValue, bool tryValueAsKey = true,  bool *returnOk = nullptr ) SIP_SKIP
 {
+  if ( keys.isEmpty() )
+  {
+    if ( returnOk )
+    {
+      *returnOk = false;
+    }
+    return defaultValue;
+  }
   const QMetaEnum metaEnum = QMetaEnum::fromType<T>();
   Q_ASSERT( metaEnum.isValid() );
   bool ok = false;
@@ -5424,7 +5619,6 @@ template<class T> T qgsFlagKeysToValue( const QString &keys, const T &defaultVal
  * \param ok will be set to TRUE if conversion was successful
  * \returns string converted to double if possible
  * \see permissiveToInt
- * \since QGIS 2.9
  */
 CORE_EXPORT double qgsPermissiveToDouble( QString string, bool &ok );
 
@@ -5435,7 +5629,6 @@ CORE_EXPORT double qgsPermissiveToDouble( QString string, bool &ok );
  * \param ok will be set to TRUE if conversion was successful
  * \returns string converted to int if possible
  * \see permissiveToDouble
- * \since QGIS 2.9
  */
 CORE_EXPORT int qgsPermissiveToInt( QString string, bool &ok );
 

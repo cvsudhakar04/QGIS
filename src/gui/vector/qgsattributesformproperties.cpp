@@ -84,7 +84,11 @@ QgsAttributesFormProperties::QgsAttributesFormProperties( QgsVectorLayer *layer,
   connect( pbnSelectEditForm, &QToolButton::clicked, this, &QgsAttributesFormProperties::pbnSelectEditForm_clicked );
   connect( mTbInitCode, &QPushButton::clicked, this, &QgsAttributesFormProperties::mTbInitCode_clicked );
 
-  connect( mLayer, &QgsVectorLayer::updatedFields, this, &QgsAttributesFormProperties::updatedFields );
+  connect( mLayer, &QgsVectorLayer::updatedFields, this, [this]
+  {
+    if ( !mBlockUpdates )
+      updatedFields();
+  } );
 }
 
 void QgsAttributesFormProperties::init()
@@ -298,6 +302,7 @@ void QgsAttributesFormProperties::loadAttributeTypeDialog()
   mAttributeTypeDialog->setUnique( constraints.constraints() & QgsFieldConstraints::ConstraintUnique );
   mAttributeTypeDialog->setUniqueEnforced( constraints.constraintStrength( QgsFieldConstraints::ConstraintUnique ) == QgsFieldConstraints::ConstraintStrengthHard );
   mAttributeTypeDialog->setSplitPolicy( cfg.mSplitPolicy );
+  mAttributeTypeDialog->setDuplicatePolicy( cfg.mDuplicatePolicy );
 
   QgsFieldConstraints::Constraints providerConstraints = QgsFieldConstraints::Constraints();
   if ( constraints.constraintOrigin( QgsFieldConstraints::ConstraintNotNull ) == QgsFieldConstraints::ConstraintOriginProvider )
@@ -374,16 +379,18 @@ void QgsAttributesFormProperties::storeAttributeTypeDialog()
   constraints.setConstraintStrength( QgsFieldConstraints::ConstraintExpression, mAttributeTypeDialog->constraintExpressionEnforced() ?
                                      QgsFieldConstraints::ConstraintStrengthHard : QgsFieldConstraints::ConstraintStrengthSoft );
 
+  // The call to mLayer->setDefaultValueDefinition will possibly emit updatedFields
+  // which will set mAttributeTypeDialog to nullptr so we need to store any value before calling it
   cfg.mFieldConstraints = constraints;
-
-  mLayer->setDefaultValueDefinition( mAttributeTypeDialog->fieldIdx(), QgsDefaultValue( mAttributeTypeDialog->defaultValueExpression(), mAttributeTypeDialog->applyDefaultValueOnUpdate() ) );
-
   cfg.mEditorWidgetType = mAttributeTypeDialog->editorWidgetType();
   cfg.mEditorWidgetConfig = mAttributeTypeDialog->editorWidgetConfig();
-
   cfg.mSplitPolicy = mAttributeTypeDialog->splitPolicy();
+  cfg.mDuplicatePolicy = mAttributeTypeDialog->duplicatePolicy();
 
-  const QString fieldName = mLayer->fields().at( mAttributeTypeDialog->fieldIdx() ).name();
+  const int fieldIndex = mAttributeTypeDialog->fieldIdx();
+  mLayer->setDefaultValueDefinition( fieldIndex, QgsDefaultValue( mAttributeTypeDialog->defaultValueExpression(), mAttributeTypeDialog->applyDefaultValueOnUpdate() ) );
+
+  const QString fieldName = mLayer->fields().at( fieldIndex ).name();
 
   for ( auto itemIt = QTreeWidgetItemIterator( mAvailableWidgetsTree ); *itemIt; ++itemIt )
   {
@@ -948,6 +955,7 @@ void QgsAttributesFormProperties::store()
 
 void QgsAttributesFormProperties::apply()
 {
+  mBlockUpdates++;
   storeAttributeWidgetEdit();
   storeAttributeContainerEdit();
   storeAttributeTypeDialog();
@@ -1008,6 +1016,7 @@ void QgsAttributesFormProperties::apply()
 
     mLayer->setFieldAlias( idx, cfg.mAlias );
     mLayer->setFieldSplitPolicy( idx, cfg.mSplitPolicy );
+    mLayer->setFieldDuplicatePolicy( idx, cfg.mDuplicatePolicy );
   }
 
   // tabs and groups
@@ -1058,6 +1067,7 @@ void QgsAttributesFormProperties::apply()
   }
 
   mLayer->setEditFormConfig( editFormConfig );
+  mBlockUpdates--;
 }
 
 
@@ -1079,6 +1089,7 @@ QgsAttributesFormProperties::FieldConfig::FieldConfig( QgsVectorLayer *layer, in
   mEditorWidgetType = setup.type();
   mEditorWidgetConfig = setup.config();
   mSplitPolicy = layer->fields().at( idx ).splitPolicy();
+  mDuplicatePolicy = layer->fields().at( idx ).duplicatePolicy();
 }
 
 QgsAttributesFormProperties::FieldConfig::operator QVariant()

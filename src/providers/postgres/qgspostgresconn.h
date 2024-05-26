@@ -29,6 +29,7 @@
 #include "qgswkbtypes.h"
 #include "qgsconfig.h"
 #include "qgsvectordataprovider.h"
+#include "qgsdbquerylog_p.h"
 
 extern "C"
 {
@@ -318,9 +319,7 @@ class QgsPostgresConn : public QObject
 
     QString uniqueCursorName();
 
-#if 0
     PGconn *pgConnection() { return mConn; }
-#endif
 
     //
     // libpq wrapper
@@ -405,7 +404,6 @@ class QgsPostgresConn : public QObject
      * Gets the list of database schemas
      * \param schemas list to store schemas in
      * \returns true if schemas where fetched successfully
-     * \since QGIS 2.7
      */
     bool getSchemas( QList<QgsPostgresSchemaProperty> &schemas );
 
@@ -449,7 +447,6 @@ class QgsPostgresConn : public QObject
     /**
      * Returns the underlying database.
      *
-     * \since QGIS 3.0
      */
     QString currentDatabase() const;
 

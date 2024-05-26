@@ -182,7 +182,7 @@ both flavors.
 
   public:
 
-    enum CrsType
+    enum CrsType /BaseType=IntEnum/
     {
       InternalCrsId,
       PostgisCrsId,
@@ -251,8 +251,6 @@ returned values can be safely passed to :py:func:`~QgsCoordinateReferenceSystem.
 QgsCoordinateReferenceSystem object.
 
 .. seealso:: :py:func:`fromSrsId`
-
-.. versionadded:: 3.0
 %End
 
 
@@ -265,8 +263,6 @@ Creates a CRS from a given OGC WMS-format Coordinate Reference System string.
 :return: matching CRS, or an invalid CRS if string could not be matched
 
 .. seealso:: :py:func:`createFromOgcWmsCrs`
-
-.. versionadded:: 3.0
 %End
 
     static QgsCoordinateReferenceSystem fromEpsgId( long epsg );
@@ -276,8 +272,6 @@ Creates a CRS from a given EPSG ID.
 :param epsg: epsg CRS ID
 
 :return: matching CRS, or an invalid CRS if string could not be matched
-
-.. versionadded:: 3.0
 %End
 
  static QgsCoordinateReferenceSystem fromProj4( const QString &proj4 ) /Deprecated/;
@@ -314,8 +308,6 @@ Creates a CRS from a WKT spatial ref sys definition string.
 :return: matching CRS, or an invalid CRS if string could not be matched
 
 .. seealso:: :py:func:`createFromWkt`
-
-.. versionadded:: 3.0
 %End
 
     static QgsCoordinateReferenceSystem fromSrsId( long srsId );
@@ -329,8 +321,24 @@ Creates a CRS from a specified QGIS SRS ID.
 .. seealso:: :py:func:`createFromSrsId`
 
 .. seealso:: :py:func:`validSrsIds`
+%End
 
-.. versionadded:: 3.0
+    static QgsCoordinateReferenceSystem createCompoundCrs( const QgsCoordinateReferenceSystem &horizontalCrs, const QgsCoordinateReferenceSystem &verticalCrs, QString &error /Out/ );
+%Docstring
+Given a horizontal and vertical CRS, attempts to create a compound CRS
+from them.
+
+Returns an invalid CRS if the inputs are not suitable for a compound CRS,
+or the compound CRS could not be created for the combination.
+
+:param horizontalCrs: horizontal component for CRS
+:param verticalCrs: vertical component for CRS
+
+:return: - compound CRS if it was possible to create one, or an invalid CRS if not
+         - error: will be set to a descriptive error if the compound CRS could not be created
+
+
+.. versionadded:: 3.38
 %End
 
 
@@ -975,8 +983,6 @@ Returns the approximate bounds for the region the CRS is usable within.
 
 The returned bounds represent the latitude and longitude extent for the
 projection in the WGS 84 CRS.
-
-.. versionadded:: 3.0
 %End
 
     QString toOgcUri() const;
@@ -985,6 +991,14 @@ Returns the crs as OGC URI (format: http://www.opengis.net/def/crs/OGC/1.3/CRS84
 Returns an empty string on failure.
 
 .. versionadded:: 3.30
+%End
+
+    QString toOgcUrn() const;
+%Docstring
+Returns the crs as OGC URN (format: urn:ogc:def:crs:OGC:1.3:CRS84)
+Returns an empty string on failure.
+
+.. versionadded:: 3.38
 %End
 
 
@@ -1088,6 +1102,43 @@ May return an invalid CRS if the geographic CRS could not be determined.
 .. versionadded:: 3.24
 %End
 
+    QgsCoordinateReferenceSystem horizontalCrs() const;
+%Docstring
+Returns the horizontal CRS associated with this CRS object.
+
+In the case of a compound CRS, this method will return just the horizontal CRS component.
+
+An invalid CRS will be returned if the object does not contain a horizontal component.
+
+.. seealso:: :py:func:`verticalCrs`
+
+.. versionadded:: 3.38
+%End
+
+    QgsCoordinateReferenceSystem verticalCrs() const;
+%Docstring
+Returns the vertical CRS associated with this CRS object.
+
+In the case of a compound CRS, this method will return just the vertical CRS component.
+
+An invalid CRS will be returned if the object does not contain a vertical component.
+
+.. seealso:: :py:func:`horizontalCrs`
+
+.. seealso:: :py:func:`hasVerticalAxis`
+
+.. versionadded:: 3.38
+%End
+
+    bool hasVerticalAxis() const;
+%Docstring
+Returns ``True`` if the CRS has a vertical axis.
+
+.. seealso:: :py:func:`verticalCrs`
+
+.. versionadded:: 3.38
+%End
+
     QString geographicCrsAuthId() const;
 %Docstring
 Returns auth id of related geographic CRS
@@ -1150,8 +1201,6 @@ Cleans the list of recently used CRS.
 Clears the internal cache used to initialize QgsCoordinateReferenceSystem objects.
 This should be called whenever the srs database has been modified in order to ensure
 that outdated CRS objects are not created.
-
-.. versionadded:: 3.0
 %End
 
 };

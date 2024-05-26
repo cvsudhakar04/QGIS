@@ -15,8 +15,6 @@ class QgsAbstractVectorLayerLabeling
 {
 %Docstring(signature="appended")
 Abstract base class - its implementations define different approaches to the labeling of a vector layer.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -71,8 +69,6 @@ Set pal settings for a specific provider (takes ownership).
 
 :param settings: Pal layer settings
 :param providerId: The id of the provider
-
-.. versionadded:: 3.0
 %End
 
     virtual bool requiresAdvancedEffects() const = 0;
@@ -80,8 +76,6 @@ Set pal settings for a specific provider (takes ownership).
 Returns ``True`` if drawing labels requires advanced effects like composition
 modes, which could prevent it being used as an isolated cached image
 or exported to a vector format.
-
-.. versionadded:: 3.0
 %End
 
     virtual void multiplyOpacity( double opacityFactor );
@@ -100,7 +94,7 @@ by ``opacity`` effectively changing the opacity of the whole labeling elements.
 Try to create instance of an implementation based on the XML data
 %End
 
-    virtual void toSld( QDomNode &parent, const QMap<QString, QVariant> &props ) const;
+    virtual void toSld( QDomNode &parent, const QVariantMap &props ) const;
 %Docstring
 Writes the SE 1.1 TextSymbolizer element based on the current layer labeling settings
 %End
@@ -125,7 +119,7 @@ Returns the default layer settings to use for the specified vector ``layer``.
 
   protected:
 
-    virtual void writeTextSymbolizer( QDomNode &parent, QgsPalLayerSettings &settings, const QMap<QString, QVariant> &props ) const;
+    virtual void writeTextSymbolizer( QDomNode &parent, QgsPalLayerSettings &settings, const QVariantMap &props ) const;
 %Docstring
 Writes a TextSymbolizer element contents based on the provided labeling settings
 
@@ -144,8 +138,6 @@ class QgsVectorLayerSimpleLabeling : QgsAbstractVectorLayerLabeling
 Basic implementation of the labeling interface.
 
 The configuration is kept in layer's custom properties for backward compatibility.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -175,13 +167,11 @@ Set pal settings (takes ownership).
 
 :param settings: Pal layer settings
 :param providerId: Unused parameter
-
-.. versionadded:: 3.0
 %End
 
     virtual bool requiresAdvancedEffects() const;
 
-    virtual void toSld( QDomNode &parent, const QMap<QString, QVariant> &props ) const;
+    virtual void toSld( QDomNode &parent, const QVariantMap &props ) const;
 
     virtual void multiplyOpacity( double opacityFactor );
 

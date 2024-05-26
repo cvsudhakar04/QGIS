@@ -17,7 +17,6 @@
 
 #include "qgslogger.h"
 
-#include "qgsdataitemproviderregistry.h"
 #include "qgsdatasourceuri.h"
 #include "qgswmscapabilities.h"
 #include "qgswmsconnection.h"
@@ -463,6 +462,14 @@ QString QgsWMSItemBase::createUri( bool withStyle )
     crs = mLayerProperty.crs[0];
   }
   mDataSourceUri.setParam( QStringLiteral( "crs" ), crs );
+
+  // Set default featureCount to 10, old connections might miss this
+  // setting.
+  if ( ! mDataSourceUri.hasParam( QStringLiteral( "featureCount" ) ) )
+  {
+    mDataSourceUri.setParam( QStringLiteral( "featureCount" ), QStringLiteral( "10" ) );
+  }
+
   //uri = rasterLayerPath + "|layers=" + layers.join( "," ) + "|styles=" + styles.join( "," ) + "|format=" + format + "|crs=" + crs;
 
   return mDataSourceUri.encodedUri();
@@ -754,9 +761,9 @@ QString QgsXyzTileDataItemProvider::dataProviderKey() const
   return QStringLiteral( "wms" );
 }
 
-int QgsXyzTileDataItemProvider::capabilities() const
+Qgis::DataItemProviderCapabilities QgsXyzTileDataItemProvider::capabilities() const
 {
-  return QgsDataProvider::Net;
+  return Qgis::DataItemProviderCapability::NetworkSources;
 }
 
 QgsDataItem *QgsXyzTileDataItemProvider::createDataItem( const QString &path, QgsDataItem *parentItem )

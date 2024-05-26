@@ -76,25 +76,25 @@ QgsMapLayerProxyModel.WritableLayer.is_monkey_patched = True
 QgsMapLayerProxyModel.WritableLayer.__doc__ = ""
 QgsMapLayerProxyModel.MeshLayer = Qgis.LayerFilter.MeshLayer
 QgsMapLayerProxyModel.MeshLayer.is_monkey_patched = True
-QgsMapLayerProxyModel.MeshLayer.__doc__ = "QgsMeshLayer \n.. versionadded:: 3.6\n"
+QgsMapLayerProxyModel.MeshLayer.__doc__ = "QgsMeshLayer \n.. versionadded:: 3.6"
 QgsMapLayerProxyModel.VectorTileLayer = Qgis.LayerFilter.VectorTileLayer
 QgsMapLayerProxyModel.VectorTileLayer.is_monkey_patched = True
-QgsMapLayerProxyModel.VectorTileLayer.__doc__ = "QgsVectorTileLayer \n.. versionadded:: 3.14\n"
+QgsMapLayerProxyModel.VectorTileLayer.__doc__ = "QgsVectorTileLayer \n.. versionadded:: 3.14"
 QgsMapLayerProxyModel.PointCloudLayer = Qgis.LayerFilter.PointCloudLayer
 QgsMapLayerProxyModel.PointCloudLayer.is_monkey_patched = True
-QgsMapLayerProxyModel.PointCloudLayer.__doc__ = "QgsPointCloudLayer \n.. versionadded:: 3.18\n"
+QgsMapLayerProxyModel.PointCloudLayer.__doc__ = "QgsPointCloudLayer \n.. versionadded:: 3.18"
 QgsMapLayerProxyModel.AnnotationLayer = Qgis.LayerFilter.AnnotationLayer
 QgsMapLayerProxyModel.AnnotationLayer.is_monkey_patched = True
-QgsMapLayerProxyModel.AnnotationLayer.__doc__ = "QgsAnnotationLayer \n.. versionadded:: 3.22\n"
+QgsMapLayerProxyModel.AnnotationLayer.__doc__ = "QgsAnnotationLayer \n.. versionadded:: 3.22"
 QgsMapLayerProxyModel.TiledSceneLayer = Qgis.LayerFilter.TiledSceneLayer
 QgsMapLayerProxyModel.TiledSceneLayer.is_monkey_patched = True
-QgsMapLayerProxyModel.TiledSceneLayer.__doc__ = "QgsTiledSceneLayer \n.. versionadded:: 3.34\n"
+QgsMapLayerProxyModel.TiledSceneLayer.__doc__ = "QgsTiledSceneLayer \n.. versionadded:: 3.34"
 QgsMapLayerProxyModel.All = Qgis.LayerFilter.All
 QgsMapLayerProxyModel.All.is_monkey_patched = True
 QgsMapLayerProxyModel.All.__doc__ = ""
 QgsMapLayerProxyModel.SpatialLayer = Qgis.LayerFilter.SpatialLayer
 QgsMapLayerProxyModel.SpatialLayer.is_monkey_patched = True
-QgsMapLayerProxyModel.SpatialLayer.__doc__ = "\n.. versionadded:: 3.24\n"
+QgsMapLayerProxyModel.SpatialLayer.__doc__ = ".. versionadded:: 3.24"
 Qgis.LayerFilter.__doc__ = "Filter for layers\n\n.. versionadded:: 3.34.\n\n" + '* ``RasterLayer``: ' + Qgis.LayerFilter.RasterLayer.__doc__ + '\n' + '* ``NoGeometry``: ' + Qgis.LayerFilter.NoGeometry.__doc__ + '\n' + '* ``PointLayer``: ' + Qgis.LayerFilter.PointLayer.__doc__ + '\n' + '* ``LineLayer``: ' + Qgis.LayerFilter.LineLayer.__doc__ + '\n' + '* ``PolygonLayer``: ' + Qgis.LayerFilter.PolygonLayer.__doc__ + '\n' + '* ``HasGeometry``: ' + Qgis.LayerFilter.HasGeometry.__doc__ + '\n' + '* ``VectorLayer``: ' + Qgis.LayerFilter.VectorLayer.__doc__ + '\n' + '* ``PluginLayer``: ' + Qgis.LayerFilter.PluginLayer.__doc__ + '\n' + '* ``WritableLayer``: ' + Qgis.LayerFilter.WritableLayer.__doc__ + '\n' + '* ``MeshLayer``: ' + Qgis.LayerFilter.MeshLayer.__doc__ + '\n' + '* ``VectorTileLayer``: ' + Qgis.LayerFilter.VectorTileLayer.__doc__ + '\n' + '* ``PointCloudLayer``: ' + Qgis.LayerFilter.PointCloudLayer.__doc__ + '\n' + '* ``AnnotationLayer``: ' + Qgis.LayerFilter.AnnotationLayer.__doc__ + '\n' + '* ``TiledSceneLayer``: ' + Qgis.LayerFilter.TiledSceneLayer.__doc__ + '\n' + '* ``All``: ' + Qgis.LayerFilter.All.__doc__ + '\n' + '* ``SpatialLayer``: ' + Qgis.LayerFilter.SpatialLayer.__doc__
 # --
 Qgis.LayerFilters = lambda flags=0: Qgis.LayerFilter(flags)
@@ -757,6 +757,35 @@ Qgis.BrowserItemCapabilities = lambda flags=0: Qgis.BrowserItemCapability(flags)
 QgsDataItem.Capabilities = Qgis.BrowserItemCapabilities
 Qgis.BrowserItemCapabilities.baseClass = Qgis
 BrowserItemCapabilities = Qgis  # dirty hack since SIP seems to introduce the flags in module
+QgsDataProvider.DataCapability = Qgis.DataItemProviderCapability
+# monkey patching scoped based enum
+QgsDataProvider.NoDataCapabilities = Qgis.DataItemProviderCapability.NoCapabilities
+QgsDataProvider.DataCapability.NoDataCapabilities = Qgis.DataItemProviderCapability.NoCapabilities
+QgsDataProvider.NoDataCapabilities.is_monkey_patched = True
+QgsDataProvider.NoDataCapabilities.__doc__ = "No capabilities"
+QgsDataProvider.File = Qgis.DataItemProviderCapability.Files
+QgsDataProvider.DataCapability.File = Qgis.DataItemProviderCapability.Files
+QgsDataProvider.File.is_monkey_patched = True
+QgsDataProvider.File.__doc__ = "Can provides items which corresponds to files"
+QgsDataProvider.Dir = Qgis.DataItemProviderCapability.Directories
+QgsDataProvider.DataCapability.Dir = Qgis.DataItemProviderCapability.Directories
+QgsDataProvider.Dir.is_monkey_patched = True
+QgsDataProvider.Dir.__doc__ = "Can provides items which corresponds to directories"
+QgsDataProvider.Database = Qgis.DataItemProviderCapability.Databases
+QgsDataProvider.DataCapability.Database = Qgis.DataItemProviderCapability.Databases
+QgsDataProvider.Database.is_monkey_patched = True
+QgsDataProvider.Database.__doc__ = "Can provides items which corresponds to databases"
+QgsDataProvider.Net = Qgis.DataItemProviderCapability.NetworkSources
+QgsDataProvider.DataCapability.Net = Qgis.DataItemProviderCapability.NetworkSources
+QgsDataProvider.Net.is_monkey_patched = True
+QgsDataProvider.Net.__doc__ = "Network/internet source"
+Qgis.DataItemProviderCapability.__doc__ = "Capabilities for data item providers.\n\n.. note::\n\n   Prior to QGIS 3.36 this was available as :py:class:`QgsDataProvider`.DataCapability\n\n.. versionadded:: 3.36\n\n" + '* ``NoDataCapabilities``: ' + Qgis.DataItemProviderCapability.NoCapabilities.__doc__ + '\n' + '* ``File``: ' + Qgis.DataItemProviderCapability.Files.__doc__ + '\n' + '* ``Dir``: ' + Qgis.DataItemProviderCapability.Directories.__doc__ + '\n' + '* ``Database``: ' + Qgis.DataItemProviderCapability.Databases.__doc__ + '\n' + '* ``Net``: ' + Qgis.DataItemProviderCapability.NetworkSources.__doc__
+# --
+Qgis.DataItemProviderCapability.baseClass = Qgis
+Qgis.DataItemProviderCapabilities = lambda flags=0: Qgis.DataItemProviderCapability(flags)
+QgsDataProvider.DataCapabilities = Qgis.DataItemProviderCapabilities
+Qgis.DataItemProviderCapabilities.baseClass = Qgis
+DataItemProviderCapabilities = Qgis  # dirty hack since SIP seems to introduce the flags in module
 QgsLayerItem.LayerType = Qgis.BrowserLayerType
 # monkey patching scoped based enum
 QgsLayerItem.NoType = Qgis.BrowserLayerType.NoType
@@ -941,6 +970,12 @@ Qgis.LabelOverlapHandling.AllowOverlapAtNoCost.__doc__ = "Labels may freely over
 Qgis.LabelOverlapHandling.__doc__ = "Label overlap handling.\n\n.. versionadded:: 3.26\n\n" + '* ``PreventOverlap``: ' + Qgis.LabelOverlapHandling.PreventOverlap.__doc__ + '\n' + '* ``AllowOverlapIfRequired``: ' + Qgis.LabelOverlapHandling.AllowOverlapIfRequired.__doc__ + '\n' + '* ``AllowOverlapAtNoCost``: ' + Qgis.LabelOverlapHandling.AllowOverlapAtNoCost.__doc__
 # --
 Qgis.LabelOverlapHandling.baseClass = Qgis
+# monkey patching scoped based enum
+Qgis.LabelPrioritization.PreferCloser.__doc__ = "Prefer closer labels, falling back to alternate positions before larger distances"
+Qgis.LabelPrioritization.PreferPositionOrdering.__doc__ = "Prefer labels follow position ordering, falling back to more distance labels before alternate positions"
+Qgis.LabelPrioritization.__doc__ = "Label prioritization.\n\n.. versionadded:: 3.38\n\n" + '* ``PreferCloser``: ' + Qgis.LabelPrioritization.PreferCloser.__doc__ + '\n' + '* ``PreferPositionOrdering``: ' + Qgis.LabelPrioritization.PreferPositionOrdering.__doc__
+# --
+Qgis.LabelPrioritization.baseClass = Qgis
 QgsPalLayerSettings.Placement = Qgis.LabelPlacement
 # monkey patching scoped based enum
 QgsPalLayerSettings.AroundPoint = Qgis.LabelPlacement.AroundPoint
@@ -1011,7 +1046,10 @@ QgsPalLayerSettings.BottomSlightlyRight.__doc__ = "Label below point, slightly r
 QgsPalLayerSettings.BottomRight = Qgis.LabelPredefinedPointPosition.BottomRight
 QgsPalLayerSettings.BottomRight.is_monkey_patched = True
 QgsPalLayerSettings.BottomRight.__doc__ = "Label on bottom right of point"
-Qgis.LabelPredefinedPointPosition.__doc__ = "Positions for labels when using the Qgis.LabelPlacement.OrderedPositionsAroundPoint placement mode.\n\n.. note::\n\n   Prior to QGIS 3.26 this was available as :py:class:`QgsPalLayerSettings`.PredefinedPointPosition\n\n.. versionadded:: 3.26\n\n" + '* ``TopLeft``: ' + Qgis.LabelPredefinedPointPosition.TopLeft.__doc__ + '\n' + '* ``TopSlightlyLeft``: ' + Qgis.LabelPredefinedPointPosition.TopSlightlyLeft.__doc__ + '\n' + '* ``TopMiddle``: ' + Qgis.LabelPredefinedPointPosition.TopMiddle.__doc__ + '\n' + '* ``TopSlightlyRight``: ' + Qgis.LabelPredefinedPointPosition.TopSlightlyRight.__doc__ + '\n' + '* ``TopRight``: ' + Qgis.LabelPredefinedPointPosition.TopRight.__doc__ + '\n' + '* ``MiddleLeft``: ' + Qgis.LabelPredefinedPointPosition.MiddleLeft.__doc__ + '\n' + '* ``MiddleRight``: ' + Qgis.LabelPredefinedPointPosition.MiddleRight.__doc__ + '\n' + '* ``BottomLeft``: ' + Qgis.LabelPredefinedPointPosition.BottomLeft.__doc__ + '\n' + '* ``BottomSlightlyLeft``: ' + Qgis.LabelPredefinedPointPosition.BottomSlightlyLeft.__doc__ + '\n' + '* ``BottomMiddle``: ' + Qgis.LabelPredefinedPointPosition.BottomMiddle.__doc__ + '\n' + '* ``BottomSlightlyRight``: ' + Qgis.LabelPredefinedPointPosition.BottomSlightlyRight.__doc__ + '\n' + '* ``BottomRight``: ' + Qgis.LabelPredefinedPointPosition.BottomRight.__doc__
+QgsPalLayerSettings.OverPoint = Qgis.LabelPredefinedPointPosition.OverPoint
+QgsPalLayerSettings.OverPoint.is_monkey_patched = True
+QgsPalLayerSettings.OverPoint.__doc__ = "Label directly centered over point (since QGIS 3.38)"
+Qgis.LabelPredefinedPointPosition.__doc__ = "Positions for labels when using the Qgis.LabelPlacement.OrderedPositionsAroundPoint placement mode.\n\n.. note::\n\n   Prior to QGIS 3.26 this was available as :py:class:`QgsPalLayerSettings`.PredefinedPointPosition\n\n.. versionadded:: 3.26\n\n" + '* ``TopLeft``: ' + Qgis.LabelPredefinedPointPosition.TopLeft.__doc__ + '\n' + '* ``TopSlightlyLeft``: ' + Qgis.LabelPredefinedPointPosition.TopSlightlyLeft.__doc__ + '\n' + '* ``TopMiddle``: ' + Qgis.LabelPredefinedPointPosition.TopMiddle.__doc__ + '\n' + '* ``TopSlightlyRight``: ' + Qgis.LabelPredefinedPointPosition.TopSlightlyRight.__doc__ + '\n' + '* ``TopRight``: ' + Qgis.LabelPredefinedPointPosition.TopRight.__doc__ + '\n' + '* ``MiddleLeft``: ' + Qgis.LabelPredefinedPointPosition.MiddleLeft.__doc__ + '\n' + '* ``MiddleRight``: ' + Qgis.LabelPredefinedPointPosition.MiddleRight.__doc__ + '\n' + '* ``BottomLeft``: ' + Qgis.LabelPredefinedPointPosition.BottomLeft.__doc__ + '\n' + '* ``BottomSlightlyLeft``: ' + Qgis.LabelPredefinedPointPosition.BottomSlightlyLeft.__doc__ + '\n' + '* ``BottomMiddle``: ' + Qgis.LabelPredefinedPointPosition.BottomMiddle.__doc__ + '\n' + '* ``BottomSlightlyRight``: ' + Qgis.LabelPredefinedPointPosition.BottomSlightlyRight.__doc__ + '\n' + '* ``BottomRight``: ' + Qgis.LabelPredefinedPointPosition.BottomRight.__doc__ + '\n' + '* ``OverPoint``: ' + Qgis.LabelPredefinedPointPosition.OverPoint.__doc__
 # --
 Qgis.LabelPredefinedPointPosition.baseClass = Qgis
 QgsPalLayerSettings.OffsetType = Qgis.LabelOffsetType
@@ -1193,6 +1231,35 @@ Qgis.SublayerFlags = lambda flags=0: Qgis.SublayerFlag(flags)
 Qgis.SublayerFlag.baseClass = Qgis
 Qgis.SublayerFlags.baseClass = Qgis
 SublayerFlags = Qgis  # dirty hack since SIP seems to introduce the flags in module
+QgsColorRampShader.Type = Qgis.ShaderInterpolationMethod
+# monkey patching scoped based enum
+QgsColorRampShader.Interpolated = Qgis.ShaderInterpolationMethod.Linear
+QgsColorRampShader.Type.Interpolated = Qgis.ShaderInterpolationMethod.Linear
+QgsColorRampShader.Interpolated.is_monkey_patched = True
+QgsColorRampShader.Interpolated.__doc__ = "Interpolates the color between two class breaks linearly"
+QgsColorRampShader.Discrete = Qgis.ShaderInterpolationMethod.Discrete
+QgsColorRampShader.Discrete.is_monkey_patched = True
+QgsColorRampShader.Discrete.__doc__ = "Assigns the color of the higher class for every pixel between two class breaks"
+QgsColorRampShader.Exact = Qgis.ShaderInterpolationMethod.Exact
+QgsColorRampShader.Exact.is_monkey_patched = True
+QgsColorRampShader.Exact.__doc__ = "Assigns the color of the exact matching value in the color ramp item list"
+Qgis.ShaderInterpolationMethod.__doc__ = "Color ramp shader interpolation methods.\n\n.. note::\n\n   Prior to QGIS 3.38 this was available as :py:class:`QgsColorRampShader`.Type\n\n.. versionadded:: 3.38\n\n" + '* ``Interpolated``: ' + Qgis.ShaderInterpolationMethod.Linear.__doc__ + '\n' + '* ``Discrete``: ' + Qgis.ShaderInterpolationMethod.Discrete.__doc__ + '\n' + '* ``Exact``: ' + Qgis.ShaderInterpolationMethod.Exact.__doc__
+# --
+Qgis.ShaderInterpolationMethod.baseClass = Qgis
+QgsColorRampShader.ClassificationMode = Qgis.ShaderClassificationMethod
+# monkey patching scoped based enum
+QgsColorRampShader.Continuous = Qgis.ShaderClassificationMethod.Continuous
+QgsColorRampShader.Continuous.is_monkey_patched = True
+QgsColorRampShader.Continuous.__doc__ = "Uses breaks from color palette"
+QgsColorRampShader.EqualInterval = Qgis.ShaderClassificationMethod.EqualInterval
+QgsColorRampShader.EqualInterval.is_monkey_patched = True
+QgsColorRampShader.EqualInterval.__doc__ = "Uses equal interval"
+QgsColorRampShader.Quantile = Qgis.ShaderClassificationMethod.Quantile
+QgsColorRampShader.Quantile.is_monkey_patched = True
+QgsColorRampShader.Quantile.__doc__ = "Uses quantile (i.e. equal pixel) count"
+Qgis.ShaderClassificationMethod.__doc__ = "Color ramp shader classification methods.\n\n.. note::\n\n   Prior to QGIS 3.38 this was available as :py:class:`QgsColorRampShader`.ClassificationMode\n\n.. versionadded:: 3.38\n\n" + '* ``Continuous``: ' + Qgis.ShaderClassificationMethod.Continuous.__doc__ + '\n' + '* ``EqualInterval``: ' + Qgis.ShaderClassificationMethod.EqualInterval.__doc__ + '\n' + '* ``Quantile``: ' + Qgis.ShaderClassificationMethod.Quantile.__doc__
+# --
+Qgis.ShaderClassificationMethod.baseClass = Qgis
 QgsRasterPipe.Role = Qgis.RasterPipeInterfaceRole
 # monkey patching scoped based enum
 QgsRasterPipe.UnknownRole = Qgis.RasterPipeInterfaceRole.Unknown
@@ -1243,12 +1310,21 @@ Qgis.RasterResamplingStage.__doc__ = "Stage at which raster resampling occurs.\n
 Qgis.RasterResamplingStage.baseClass = Qgis
 # monkey patching scoped based enum
 Qgis.RasterRendererFlag.InternalLayerOpacityHandling.__doc__ = "The renderer internally handles the raster layer's opacity, so the default layer level opacity handling should not be applied."
-Qgis.RasterRendererFlag.__doc__ = "Flags which control behavior of raster renderers.\n\n.. versionadded:: 3.28\n\n" + '* ``InternalLayerOpacityHandling``: ' + Qgis.RasterRendererFlag.InternalLayerOpacityHandling.__doc__
+Qgis.RasterRendererFlag.UseNoDataForOutOfRangePixels.__doc__ = "Out of range pixels (eg those values outside of the rendered map's z range filter) should be set using additional nodata values instead of additional transparency values (since QGIS 3.38)"
+Qgis.RasterRendererFlag.__doc__ = "Flags which control behavior of raster renderers.\n\n.. versionadded:: 3.28\n\n" + '* ``InternalLayerOpacityHandling``: ' + Qgis.RasterRendererFlag.InternalLayerOpacityHandling.__doc__ + '\n' + '* ``UseNoDataForOutOfRangePixels``: ' + Qgis.RasterRendererFlag.UseNoDataForOutOfRangePixels.__doc__
 # --
 Qgis.RasterRendererFlags = lambda flags=0: Qgis.RasterRendererFlag(flags)
 Qgis.RasterRendererFlag.baseClass = Qgis
 Qgis.RasterRendererFlags.baseClass = Qgis
 RasterRendererFlags = Qgis  # dirty hack since SIP seems to introduce the flags in module
+# monkey patching scoped based enum
+Qgis.RasterRendererCapability.UsesMultipleBands.__doc__ = "The renderer utilizes multiple raster bands for color data (note that alpha bands are not considered for this capability)"
+Qgis.RasterRendererCapability.__doc__ = "Raster renderer capabilities.\n\n.. versionadded:: 3.48\n\n" + '* ``UsesMultipleBands``: ' + Qgis.RasterRendererCapability.UsesMultipleBands.__doc__
+# --
+Qgis.RasterRendererCapability.baseClass = Qgis
+Qgis.RasterRendererCapabilities = lambda flags=0: Qgis.RasterRendererCapability(flags)
+Qgis.RasterRendererCapabilities.baseClass = Qgis
+RasterRendererCapabilities = Qgis  # dirty hack since SIP seems to introduce the flags in module
 # monkey patching scoped based enum
 Qgis.RasterAttributeTableFieldUsage.Generic.__doc__ = "Field usage Generic"
 Qgis.RasterAttributeTableFieldUsage.PixelCount.__doc__ = "Field usage PixelCount"
@@ -1509,6 +1585,14 @@ Qgis.GpsQualityIndicator.Simulation.__doc__ = "Simulation mode"
 Qgis.GpsQualityIndicator.__doc__ = "GPS signal quality indicator\n\n.. versionadded:: 3.22.6\n\n" + '* ``Unknown``: ' + Qgis.GpsQualityIndicator.Unknown.__doc__ + '\n' + '* ``Invalid``: ' + Qgis.GpsQualityIndicator.Invalid.__doc__ + '\n' + '* ``GPS``: ' + Qgis.GpsQualityIndicator.GPS.__doc__ + '\n' + '* ``DGPS``: ' + Qgis.GpsQualityIndicator.DGPS.__doc__ + '\n' + '* ``PPS``: ' + Qgis.GpsQualityIndicator.PPS.__doc__ + '\n' + '* ``RTK``: ' + Qgis.GpsQualityIndicator.RTK.__doc__ + '\n' + '* ``FloatRTK``: ' + Qgis.GpsQualityIndicator.FloatRTK.__doc__ + '\n' + '* ``Estimated``: ' + Qgis.GpsQualityIndicator.Estimated.__doc__ + '\n' + '* ``Manual``: ' + Qgis.GpsQualityIndicator.Manual.__doc__ + '\n' + '* ``Simulation``: ' + Qgis.GpsQualityIndicator.Simulation.__doc__
 # --
 Qgis.GpsQualityIndicator.baseClass = Qgis
+# monkey patching scoped based enum
+Qgis.GpsNavigationStatus.NotValid.__doc__ = "Navigation status not valid"
+Qgis.GpsNavigationStatus.Safe.__doc__ = "Safe"
+Qgis.GpsNavigationStatus.Caution.__doc__ = "Caution"
+Qgis.GpsNavigationStatus.Unsafe.__doc__ = "Unsafe"
+Qgis.GpsNavigationStatus.__doc__ = "GPS navigation status.\n\n.. versionadded:: 3.38\n\n" + '* ``NotValid``: ' + Qgis.GpsNavigationStatus.NotValid.__doc__ + '\n' + '* ``Safe``: ' + Qgis.GpsNavigationStatus.Safe.__doc__ + '\n' + '* ``Caution``: ' + Qgis.GpsNavigationStatus.Caution.__doc__ + '\n' + '* ``Unsafe``: ' + Qgis.GpsNavigationStatus.Unsafe.__doc__
+# --
+Qgis.GpsNavigationStatus.baseClass = Qgis
 # monkey patching scoped based enum
 Qgis.GpsInformationComponent.Location.__doc__ = "2D location (latitude/longitude), as a QgsPointXY value"
 Qgis.GpsInformationComponent.Altitude.__doc__ = "Altitude/elevation above or below the mean sea level"
@@ -1801,7 +1885,9 @@ Qgis.AutoRefreshMode.__doc__ = "Map layer automatic refresh modes.\n\n.. version
 Qgis.AutoRefreshMode.baseClass = Qgis
 # monkey patching scoped based enum
 Qgis.DataProviderFlag.IsBasemapSource.__doc__ = "Associated source should be considered a 'basemap' layer. See Qgis.MapLayerProperty.IsBasemapLayer."
-Qgis.DataProviderFlag.__doc__ = "Generic data provider flags.\n\n.. versionadded:: 3.26\n\n" + '* ``IsBasemapSource``: ' + Qgis.DataProviderFlag.IsBasemapSource.__doc__
+Qgis.DataProviderFlag.FastExtent2D.__doc__ = "Provider's 2D extent retrieval via QgsDataProvider.extent() is always guaranteed to be trivial/fast to calculate. Since QGIS 3.38."
+Qgis.DataProviderFlag.FastExtent3D.__doc__ = "Provider's 3D extent retrieval via QgsDataProvider.extent3D() is always guaranteed to be trivial/fast to calculate. Since QGIS 3.38."
+Qgis.DataProviderFlag.__doc__ = "Generic data provider flags.\n\n.. versionadded:: 3.26\n\n" + '* ``IsBasemapSource``: ' + Qgis.DataProviderFlag.IsBasemapSource.__doc__ + '\n' + '* ``FastExtent2D``: ' + Qgis.DataProviderFlag.FastExtent2D.__doc__ + '\n' + '* ``FastExtent3D``: ' + Qgis.DataProviderFlag.FastExtent3D.__doc__
 # --
 Qgis.DataProviderFlags = lambda flags=0: Qgis.DataProviderFlag(flags)
 Qgis.DataProviderFlag.baseClass = Qgis
@@ -2074,7 +2160,13 @@ QgsRasterLayerTemporalProperties.ModeRedrawLayerOnly = Qgis.RasterTemporalMode.R
 QgsRasterLayerTemporalProperties.TemporalMode.ModeRedrawLayerOnly = Qgis.RasterTemporalMode.RedrawLayerOnly
 QgsRasterLayerTemporalProperties.ModeRedrawLayerOnly.is_monkey_patched = True
 QgsRasterLayerTemporalProperties.ModeRedrawLayerOnly.__doc__ = "Redraw the layer when temporal range changes, but don't apply any filtering. Useful when raster symbology expressions depend on the time range. (since QGIS 3.22)"
-Qgis.RasterTemporalMode.__doc__ = "Raster layer temporal modes\n\n.. versionadded:: 3.22\n\n" + '* ``ModeFixedTemporalRange``: ' + Qgis.RasterTemporalMode.FixedTemporalRange.__doc__ + '\n' + '* ``ModeTemporalRangeFromDataProvider``: ' + Qgis.RasterTemporalMode.TemporalRangeFromDataProvider.__doc__ + '\n' + '* ``ModeRedrawLayerOnly``: ' + Qgis.RasterTemporalMode.RedrawLayerOnly.__doc__
+QgsRasterLayerTemporalProperties.FixedRangePerBand = Qgis.RasterTemporalMode.FixedRangePerBand
+QgsRasterLayerTemporalProperties.FixedRangePerBand.is_monkey_patched = True
+QgsRasterLayerTemporalProperties.FixedRangePerBand.__doc__ = "Layer has a fixed temporal range per band (since QGIS 3.38)"
+QgsRasterLayerTemporalProperties.RepresentsTemporalValues = Qgis.RasterTemporalMode.RepresentsTemporalValues
+QgsRasterLayerTemporalProperties.RepresentsTemporalValues.is_monkey_patched = True
+QgsRasterLayerTemporalProperties.RepresentsTemporalValues.__doc__ = "Pixel values represent an datetime"
+Qgis.RasterTemporalMode.__doc__ = "Raster layer temporal modes\n\n.. versionadded:: 3.22\n\n" + '* ``ModeFixedTemporalRange``: ' + Qgis.RasterTemporalMode.FixedTemporalRange.__doc__ + '\n' + '* ``ModeTemporalRangeFromDataProvider``: ' + Qgis.RasterTemporalMode.TemporalRangeFromDataProvider.__doc__ + '\n' + '* ``ModeRedrawLayerOnly``: ' + Qgis.RasterTemporalMode.RedrawLayerOnly.__doc__ + '\n' + '* ``FixedRangePerBand``: ' + Qgis.RasterTemporalMode.FixedRangePerBand.__doc__ + '\n' + '* ``RepresentsTemporalValues``: ' + Qgis.RasterTemporalMode.RepresentsTemporalValues.__doc__
 # --
 Qgis.RasterTemporalMode.baseClass = Qgis
 QgsRasterDataProviderTemporalCapabilities.IntervalHandlingMethod = Qgis.TemporalIntervalMatchMethod
@@ -2852,23 +2944,23 @@ QgsProcessing.TypeVector.__doc__ = "Tables (i.e. vector layers with or without g
 QgsProcessing.TypeMesh = Qgis.ProcessingSourceType.Mesh
 QgsProcessing.SourceType.TypeMesh = Qgis.ProcessingSourceType.Mesh
 QgsProcessing.TypeMesh.is_monkey_patched = True
-QgsProcessing.TypeMesh.__doc__ = "Mesh layers \n.. versionadded:: 3.6\n"
+QgsProcessing.TypeMesh.__doc__ = "Mesh layers \n.. versionadded:: 3.6"
 QgsProcessing.TypePlugin = Qgis.ProcessingSourceType.Plugin
 QgsProcessing.SourceType.TypePlugin = Qgis.ProcessingSourceType.Plugin
 QgsProcessing.TypePlugin.is_monkey_patched = True
-QgsProcessing.TypePlugin.__doc__ = "Plugin layers \n.. versionadded:: 3.22\n"
+QgsProcessing.TypePlugin.__doc__ = "Plugin layers \n.. versionadded:: 3.22"
 QgsProcessing.TypePointCloud = Qgis.ProcessingSourceType.PointCloud
 QgsProcessing.SourceType.TypePointCloud = Qgis.ProcessingSourceType.PointCloud
 QgsProcessing.TypePointCloud.is_monkey_patched = True
-QgsProcessing.TypePointCloud.__doc__ = "Point cloud layers \n.. versionadded:: 3.22\n"
+QgsProcessing.TypePointCloud.__doc__ = "Point cloud layers \n.. versionadded:: 3.22"
 QgsProcessing.TypeAnnotation = Qgis.ProcessingSourceType.Annotation
 QgsProcessing.SourceType.TypeAnnotation = Qgis.ProcessingSourceType.Annotation
 QgsProcessing.TypeAnnotation.is_monkey_patched = True
-QgsProcessing.TypeAnnotation.__doc__ = "Annotation layers \n.. versionadded:: 3.22\n"
+QgsProcessing.TypeAnnotation.__doc__ = "Annotation layers \n.. versionadded:: 3.22"
 QgsProcessing.TypeVectorTile = Qgis.ProcessingSourceType.VectorTile
 QgsProcessing.SourceType.TypeVectorTile = Qgis.ProcessingSourceType.VectorTile
 QgsProcessing.TypeVectorTile.is_monkey_patched = True
-QgsProcessing.TypeVectorTile.__doc__ = "Vector tile layers \n.. versionadded:: 3.32\n"
+QgsProcessing.TypeVectorTile.__doc__ = "Vector tile layers \n.. versionadded:: 3.32"
 Qgis.ProcessingSourceType.__doc__ = "Processing data source types.\n\n.. note::\n\n   Prior to QGIS 3.36 this was available as :py:class:`QgsProcessing`.SourceType\n\n.. versionadded:: 3.36\n\n" + '* ``TypeMapLayer``: ' + Qgis.ProcessingSourceType.MapLayer.__doc__ + '\n' + '* ``TypeVectorAnyGeometry``: ' + Qgis.ProcessingSourceType.VectorAnyGeometry.__doc__ + '\n' + '* ``TypeVectorPoint``: ' + Qgis.ProcessingSourceType.VectorPoint.__doc__ + '\n' + '* ``TypeVectorLine``: ' + Qgis.ProcessingSourceType.VectorLine.__doc__ + '\n' + '* ``TypeVectorPolygon``: ' + Qgis.ProcessingSourceType.VectorPolygon.__doc__ + '\n' + '* ``TypeRaster``: ' + Qgis.ProcessingSourceType.Raster.__doc__ + '\n' + '* ``TypeFile``: ' + Qgis.ProcessingSourceType.File.__doc__ + '\n' + '* ``TypeVector``: ' + Qgis.ProcessingSourceType.Vector.__doc__ + '\n' + '* ``TypeMesh``: ' + Qgis.ProcessingSourceType.Mesh.__doc__ + '\n' + '* ``TypePlugin``: ' + Qgis.ProcessingSourceType.Plugin.__doc__ + '\n' + '* ``TypePointCloud``: ' + Qgis.ProcessingSourceType.PointCloud.__doc__ + '\n' + '* ``TypeAnnotation``: ' + Qgis.ProcessingSourceType.Annotation.__doc__ + '\n' + '* ``TypeVectorTile``: ' + Qgis.ProcessingSourceType.VectorTile.__doc__
 # --
 Qgis.ProcessingSourceType.baseClass = Qgis
@@ -3119,6 +3211,13 @@ Qgis.ProcessingModelChildParameterSource.ModelOutput.__doc__ = "Parameter value 
 Qgis.ProcessingModelChildParameterSource.__doc__ = "Processing model child parameter sources.\n\n.. versionadded:: 3.34\n\n" + '* ``ModelParameter``: ' + Qgis.ProcessingModelChildParameterSource.ModelParameter.__doc__ + '\n' + '* ``ChildOutput``: ' + Qgis.ProcessingModelChildParameterSource.ChildOutput.__doc__ + '\n' + '* ``StaticValue``: ' + Qgis.ProcessingModelChildParameterSource.StaticValue.__doc__ + '\n' + '* ``Expression``: ' + Qgis.ProcessingModelChildParameterSource.Expression.__doc__ + '\n' + '* ``ExpressionText``: ' + Qgis.ProcessingModelChildParameterSource.ExpressionText.__doc__ + '\n' + '* ``ModelOutput``: ' + Qgis.ProcessingModelChildParameterSource.ModelOutput.__doc__
 # --
 Qgis.ProcessingModelChildParameterSource.baseClass = Qgis
+# monkey patching scoped based enum
+Qgis.ProcessingModelChildAlgorithmExecutionStatus.NotExecuted.__doc__ = "Child has not been executed"
+Qgis.ProcessingModelChildAlgorithmExecutionStatus.Success.__doc__ = "Child was successfully executed"
+Qgis.ProcessingModelChildAlgorithmExecutionStatus.Failed.__doc__ = "Child encountered an error while executing"
+Qgis.ProcessingModelChildAlgorithmExecutionStatus.__doc__ = "Reflects the status of a child algorithm in a Processing model.\n\n.. versionadded:: 3.38\n\n" + '* ``NotExecuted``: ' + Qgis.ProcessingModelChildAlgorithmExecutionStatus.NotExecuted.__doc__ + '\n' + '* ``Success``: ' + Qgis.ProcessingModelChildAlgorithmExecutionStatus.Success.__doc__ + '\n' + '* ``Failed``: ' + Qgis.ProcessingModelChildAlgorithmExecutionStatus.Failed.__doc__
+# --
+Qgis.ProcessingModelChildAlgorithmExecutionStatus.baseClass = Qgis
 QgsProcessingParameterTinInputLayers.Type = Qgis.ProcessingTinInputLayerType
 # monkey patching scoped based enum
 QgsProcessingParameterTinInputLayers.Vertices = Qgis.ProcessingTinInputLayerType.Vertices
@@ -3162,6 +3261,13 @@ Qgis.FieldDomainMergePolicy.__doc__ = "Merge policy for field domains.\n\nWhen a
 # --
 Qgis.FieldDomainMergePolicy.baseClass = Qgis
 # monkey patching scoped based enum
+Qgis.FieldDuplicatePolicy.DefaultValue.__doc__ = "Use default field value"
+Qgis.FieldDuplicatePolicy.Duplicate.__doc__ = "Duplicate original value"
+Qgis.FieldDuplicatePolicy.UnsetField.__doc__ = "Clears the field value so that the data provider backend will populate using any backend triggers or similar logic (since QGIS 3.30)"
+Qgis.FieldDuplicatePolicy.__doc__ = "Duplicate policy for fields.\n\nWhen a feature is duplicated, defines how the value of attributes are computed.\n\n.. versionadded:: 3.38\n\n" + '* ``DefaultValue``: ' + Qgis.FieldDuplicatePolicy.DefaultValue.__doc__ + '\n' + '* ``Duplicate``: ' + Qgis.FieldDuplicatePolicy.Duplicate.__doc__ + '\n' + '* ``UnsetField``: ' + Qgis.FieldDuplicatePolicy.UnsetField.__doc__
+# --
+Qgis.FieldDuplicatePolicy.baseClass = Qgis
+# monkey patching scoped based enum
 Qgis.FieldDomainType.Coded.__doc__ = "Coded field domain"
 Qgis.FieldDomainType.Range.__doc__ = "Numeric range field domain (min/max)"
 Qgis.FieldDomainType.Glob.__doc__ = "Glob string pattern field domain"
@@ -3188,6 +3294,29 @@ Qgis.AltitudeBinding.Centroid.__doc__ = "Clamp just centroid of feature"
 Qgis.AltitudeBinding.__doc__ = "Altitude binding.\n\n.. versionadded:: 3.26\n\n" + '* ``Vertex``: ' + Qgis.AltitudeBinding.Vertex.__doc__ + '\n' + '* ``Centroid``: ' + Qgis.AltitudeBinding.Centroid.__doc__
 # --
 Qgis.AltitudeBinding.baseClass = Qgis
+# monkey patching scoped based enum
+Qgis.RangeLimits.IncludeBoth.__doc__ = "Both lower and upper values are included in the range"
+Qgis.RangeLimits.IncludeLowerExcludeUpper.__doc__ = "Lower value is included in the range, upper value is excluded"
+Qgis.RangeLimits.ExcludeLowerIncludeUpper.__doc__ = "Lower value is excluded from the range, upper value in inccluded"
+Qgis.RangeLimits.ExcludeBoth.__doc__ = "Both lower and upper values are excluded from the range"
+Qgis.RangeLimits.__doc__ = "Describes how the limits of a range are handled.\n\n.. versionadded:: 3.38\n\n" + '* ``IncludeBoth``: ' + Qgis.RangeLimits.IncludeBoth.__doc__ + '\n' + '* ``IncludeLowerExcludeUpper``: ' + Qgis.RangeLimits.IncludeLowerExcludeUpper.__doc__ + '\n' + '* ``ExcludeLowerIncludeUpper``: ' + Qgis.RangeLimits.ExcludeLowerIncludeUpper.__doc__ + '\n' + '* ``ExcludeBoth``: ' + Qgis.RangeLimits.ExcludeBoth.__doc__
+# --
+Qgis.RangeLimits.baseClass = Qgis
+# monkey patching scoped based enum
+Qgis.RasterElevationMode.FixedElevationRange.__doc__ = "Layer has a fixed elevation range"
+Qgis.RasterElevationMode.RepresentsElevationSurface.__doc__ = "Pixel values represent an elevation surface"
+Qgis.RasterElevationMode.FixedRangePerBand.__doc__ = "Layer has a fixed (manually specified) elevation range per band"
+Qgis.RasterElevationMode.DynamicRangePerBand.__doc__ = "Layer has a elevation range per band, calculated dynamically from an expression"
+Qgis.RasterElevationMode.__doc__ = "Raster layer elevation modes.\n\n.. versionadded:: 3.38\n\n" + '* ``FixedElevationRange``: ' + Qgis.RasterElevationMode.FixedElevationRange.__doc__ + '\n' + '* ``RepresentsElevationSurface``: ' + Qgis.RasterElevationMode.RepresentsElevationSurface.__doc__ + '\n' + '* ``FixedRangePerBand``: ' + Qgis.RasterElevationMode.FixedRangePerBand.__doc__ + '\n' + '* ``DynamicRangePerBand``: ' + Qgis.RasterElevationMode.DynamicRangePerBand.__doc__
+# --
+Qgis.RasterElevationMode.baseClass = Qgis
+# monkey patching scoped based enum
+Qgis.MeshElevationMode.FixedElevationRange.__doc__ = "Layer has a fixed elevation range"
+Qgis.MeshElevationMode.FromVertices.__doc__ = "Elevation should be taken from mesh vertices"
+Qgis.MeshElevationMode.FixedRangePerGroup.__doc__ = "Layer has a fixed (manually specified) elevation range per group"
+Qgis.MeshElevationMode.__doc__ = "Mesh layer elevation modes.\n\n.. versionadded:: 3.38\n\n" + '* ``FixedElevationRange``: ' + Qgis.MeshElevationMode.FixedElevationRange.__doc__ + '\n' + '* ``FromVertices``: ' + Qgis.MeshElevationMode.FromVertices.__doc__ + '\n' + '* ``FixedRangePerGroup``: ' + Qgis.MeshElevationMode.FixedRangePerGroup.__doc__
+# --
+Qgis.MeshElevationMode.baseClass = Qgis
 # monkey patching scoped based enum
 Qgis.NoConstraint = Qgis.BetweenLineConstraint.NoConstraint
 Qgis.NoConstraint.is_monkey_patched = True
@@ -3583,10 +3712,10 @@ QgsAction.OpenUrl.is_monkey_patched = True
 QgsAction.OpenUrl.__doc__ = "Open URL action"
 QgsAction.SubmitUrlEncoded = Qgis.AttributeActionType.SubmitUrlEncoded
 QgsAction.SubmitUrlEncoded.is_monkey_patched = True
-QgsAction.SubmitUrlEncoded.__doc__ = "POST data to an URL, using \"application/x-www-form-urlencoded\" or \"application/json\" if the body is valid JSON \n.. versionadded:: 3.24\n"
+QgsAction.SubmitUrlEncoded.__doc__ = "POST data to an URL, using \"application/x-www-form-urlencoded\" or \"application/json\" if the body is valid JSON \n.. versionadded:: 3.24"
 QgsAction.SubmitUrlMultipart = Qgis.AttributeActionType.SubmitUrlMultipart
 QgsAction.SubmitUrlMultipart.is_monkey_patched = True
-QgsAction.SubmitUrlMultipart.__doc__ = "POST data to an URL using \"multipart/form-data\"  \n.. versionadded:: 3.24\n"
+QgsAction.SubmitUrlMultipart.__doc__ = "POST data to an URL using \"multipart/form-data\"  \n.. versionadded:: 3.24"
 Qgis.AttributeActionType.__doc__ = "Attribute action types.\n\nPrior to QGIS 3.30 this was available as :py:class:`QgsAction`.ActionType\n\n.. versionadded:: 3.30\n\n" + '* ``Generic``: ' + Qgis.AttributeActionType.Generic.__doc__ + '\n' + '* ``GenericPython``: ' + Qgis.AttributeActionType.GenericPython.__doc__ + '\n' + '* ``Mac``: ' + Qgis.AttributeActionType.Mac.__doc__ + '\n' + '* ``Windows``: ' + Qgis.AttributeActionType.Windows.__doc__ + '\n' + '* ``Unix``: ' + Qgis.AttributeActionType.Unix.__doc__ + '\n' + '* ``OpenUrl``: ' + Qgis.AttributeActionType.OpenUrl.__doc__ + '\n' + '* ``SubmitUrlEncoded``: ' + Qgis.AttributeActionType.SubmitUrlEncoded.__doc__ + '\n' + '* ``SubmitUrlMultipart``: ' + Qgis.AttributeActionType.SubmitUrlMultipart.__doc__
 # --
 Qgis.AttributeActionType.baseClass = Qgis
@@ -4830,3 +4959,17 @@ Qgis.RasterBandStatistic.baseClass = Qgis
 Qgis.RasterBandStatistics = lambda flags=0: Qgis.RasterBandStatistic(flags)
 Qgis.RasterBandStatistics.baseClass = Qgis
 RasterBandStatistics = Qgis  # dirty hack since SIP seems to introduce the flags in module
+# monkey patching scoped based enum
+Qgis.SensorThingsEntity.Invalid.__doc__ = "An invalid/unknown entity"
+Qgis.SensorThingsEntity.Thing.__doc__ = "A Thing is an object of the physical world (physical things) or the information world (virtual things) that is capable of being identified and integrated into communication networks"
+Qgis.SensorThingsEntity.Location.__doc__ = "A Location entity locates the Thing or the Things it associated with. A Thing’s Location entity is defined as the last known location of the Thing"
+Qgis.SensorThingsEntity.HistoricalLocation.__doc__ = "A Thing’s HistoricalLocation entity set provides the times of the current (i.e., last known) and previous locations of the Thing"
+Qgis.SensorThingsEntity.Datastream.__doc__ = "A Datastream groups a collection of Observations measuring the same ObservedProperty and produced by the same Sensor"
+Qgis.SensorThingsEntity.Sensor.__doc__ = "A Sensor is an instrument that observes a property or phenomenon with the goal of producing an estimate of the value of the property"
+Qgis.SensorThingsEntity.ObservedProperty.__doc__ = "An ObservedProperty specifies the phenomenon of an Observation"
+Qgis.SensorThingsEntity.Observation.__doc__ = "An Observation is the act of measuring or otherwise determining the value of a property"
+Qgis.SensorThingsEntity.FeatureOfInterest.__doc__ = "In the context of the Internet of Things, many Observations’ FeatureOfInterest can be the Location of the Thing. For example, the FeatureOfInterest of a wifi-connect thermostat can be the Location of the thermostat (i.e., the living room where the thermostat is located in). In the case of remote sensing, the FeatureOfInterest can be the geographical area or volume that is being sensed"
+Qgis.SensorThingsEntity.MultiDatastream.__doc__ = "A MultiDatastream groups a collection of Observations and the Observations in a MultiDatastream have a complex result type. Implemented in the SensorThings version 1.1 \"MultiDatastream extension\". (Since QGIS 3.38)"
+Qgis.SensorThingsEntity.__doc__ = "OGC SensorThings API entity types.\n\n.. versionadded:: 3.36\n\n" + '* ``Invalid``: ' + Qgis.SensorThingsEntity.Invalid.__doc__ + '\n' + '* ``Thing``: ' + Qgis.SensorThingsEntity.Thing.__doc__ + '\n' + '* ``Location``: ' + Qgis.SensorThingsEntity.Location.__doc__ + '\n' + '* ``HistoricalLocation``: ' + Qgis.SensorThingsEntity.HistoricalLocation.__doc__ + '\n' + '* ``Datastream``: ' + Qgis.SensorThingsEntity.Datastream.__doc__ + '\n' + '* ``Sensor``: ' + Qgis.SensorThingsEntity.Sensor.__doc__ + '\n' + '* ``ObservedProperty``: ' + Qgis.SensorThingsEntity.ObservedProperty.__doc__ + '\n' + '* ``Observation``: ' + Qgis.SensorThingsEntity.Observation.__doc__ + '\n' + '* ``FeatureOfInterest``: ' + Qgis.SensorThingsEntity.FeatureOfInterest.__doc__ + '\n' + '* ``MultiDatastream``: ' + Qgis.SensorThingsEntity.MultiDatastream.__doc__
+# --
+Qgis.SensorThingsEntity.baseClass = Qgis

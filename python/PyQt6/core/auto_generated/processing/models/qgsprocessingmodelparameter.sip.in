@@ -15,8 +15,6 @@ class QgsProcessingModelParameter : QgsProcessingModelComponent
 {
 %Docstring(signature="appended")
 Represents an input parameter used by the model.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -56,9 +54,9 @@ Saves this parameter to a QVariant.
 .. seealso:: :py:func:`loadVariant`
 %End
 
-    bool loadVariant( const QMap<QString, QVariant> &map );
+    bool loadVariant( const QVariantMap &map );
 %Docstring
-Loads this parameter from a QMap<QString, QVariant>.
+Loads this parameter from a QVariantMap.
 
 .. seealso:: :py:func:`toVariant`
 %End

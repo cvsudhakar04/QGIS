@@ -12,8 +12,6 @@ class QgsEditorWidgetSetup
 {
 %Docstring(signature="appended")
 Holder for the widget type and its configuration for a field.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -21,7 +19,7 @@ Holder for the widget type and its configuration for a field.
 %End
   public:
 
-    QgsEditorWidgetSetup( const QString &type, const QMap<QString, QVariant> &config );
+    QgsEditorWidgetSetup( const QString &type, const QVariantMap &config );
 %Docstring
 Constructor
 %End
@@ -37,7 +35,7 @@ Constructor for QgsEditorWidgetSetup
 :return: the widget type to use
 %End
 
-    QMap<QString, QVariant> config() const;
+    QVariantMap config() const;
 %Docstring
 
 :return: the widget configuration to used

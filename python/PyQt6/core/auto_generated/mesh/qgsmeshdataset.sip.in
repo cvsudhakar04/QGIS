@@ -12,6 +12,7 @@
 
 
 
+
 class QgsMeshDatasetIndex
 {
 %Docstring(signature="appended")
@@ -144,7 +145,7 @@ value by value (slower) with :py:func:`~QgsMeshDatasetValue.active` or :py:func:
 #include "qgsmeshdataset.h"
 %End
   public:
-    enum DataType
+    enum DataType /BaseType=IntEnum/
     {
       ActiveFlagInteger,
       ScalarDouble,
@@ -390,7 +391,7 @@ such as whether the data is vector or scalar, name
 %End
   public:
 
-    enum DataType
+    enum DataType /BaseType=IntEnum/
     {
       DataOnFaces,
       DataOnVertices,
@@ -431,6 +432,16 @@ Constructs a valid metadata object
     QString name() const;
 %Docstring
 Returns name of the dataset group
+%End
+
+    QString parentQuantityName() const;
+%Docstring
+Returns the name of the dataset's parent quantity, if available.
+
+The quantity can be used to collect dataset groups which represent a single quantity
+but at different values (e.g. groups which represent different elevations).
+
+.. versionadded:: 3.38
 %End
 
     QString uri() const;
@@ -627,7 +638,7 @@ Abstract class that represents a dataset group
 %End
   public:
 
-    enum Type
+    enum Type /BaseType=IntEnum/
     {
       None,
       Persistent,

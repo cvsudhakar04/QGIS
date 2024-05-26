@@ -949,7 +949,7 @@ sub fix_annotations {
     # combine multiple annotations
     # https://regex101.com/r/uvCt4M/5
     do {no warnings 'uninitialized';
-        $line =~ s/\/([\w,]+(=\"?\w+\"?)?)\/\s*\/([\w,]+(=\"?\w+\"?)?)\//\/$1,$3\//;
+        $line =~ s/\/([\w,]+(=\"?[\w, [\]]+\"?)?)\/\s*\/([\w,]+(=\"?[\w, [\]]+\"?)?)\//\/$1,$3\//;
         (! $3) or dbg_info("combine multiple annotations -- works only for 2");
     };
 
@@ -1010,7 +1010,7 @@ sub replace_macros {
     if ( $is_qt6 )
     {
         # sip for Qt6 chokes on QList/QVector<QVariantMap>, but is happy if you expand out the map explicitly
-        $line =~ s/(\s|QList<\s*|QVector<\s*)QVariantMap/$1QMap<QString, QVariant>/g;
+        $line =~ s/(QList<\s*|QVector<\s*)QVariantMap/$1QMap<QString, QVariant>/g;
     }
     return $line;
 }
@@ -1618,6 +1618,10 @@ while ($LINE_IDX < $LINE_COUNT){
           exit_with_error("Unhandled enum type $enum_type for $enum_cpp_name");
         } elsif (defined $isclass) {
           push @ENUM_CLASS_NON_INT_TYPES, "$ACTUAL_CLASS.$enum_qualname";
+        } elsif ($is_qt6 eq 1) {
+          # non class enum in qt6 -- we always want these to be IntEnums
+          # for compatibility with qt5 code
+          $enum_decl .= " /BaseType=IntEnum/"
         }
 
         write_output("ENU1", "$enum_decl");
@@ -1669,6 +1673,9 @@ while ($LINE_IDX < $LINE_COUNT){
                     $comment =~ s/::/./g;
                     $comment =~ s/\"/\\"/g;
                     $comment =~ s/\\since .*?([\d\.]+)/\\n.. versionadded:: $1\\n/i;
+                    $comment =~ s/\\deprecated (.*)/\\n.. deprecated:: $1\\n/i;
+                    $comment =~ s/^\\n+//;
+                    $comment =~ s/\\n+$//;
                     dbg_info("is_scope_based:$is_scope_based enum_mk_base:$enum_mk_base monkeypatch:$monkeypatch");
                     if ( defined $enum_value and ($enum_value =~ m/.*\<\<.*/ or $enum_value =~ m/.*0x0.*/)) {
                        if (none { $_ eq "${ACTUAL_CLASS}::$enum_qualname" } @ENUM_INTFLAG_TYPES) {
@@ -1747,6 +1754,9 @@ while ($LINE_IDX < $LINE_COUNT){
     $IS_OVERRIDE_OR_MAKE_PRIVATE = PREPEND_CODE_VIRTUAL if ( $LINE =~ m/\boverride\b/);
     $IS_OVERRIDE_OR_MAKE_PRIVATE = PREPEND_CODE_VIRTUAL if ( $LINE =~ m/\bFINAL\b/);
     $IS_OVERRIDE_OR_MAKE_PRIVATE = PREPEND_CODE_MAKE_PRIVATE if ( $LINE =~ m/\bSIP_MAKE_PRIVATE\b/);
+
+    # remove Q_INVOKABLE
+    $LINE =~ s/^(\s*)Q_INVOKABLE /$1/;
 
     # keyword fixes
     do {no warnings 'uninitialized';
@@ -1829,7 +1839,7 @@ while ($LINE_IDX < $LINE_COUNT){
           if ( $is_qt6 ) {
             dbg_info("monkey patching operators for non class enum");
             if ($HAS_PUSHED_FORCE_INT eq 0) {
-              push @OUTPUT_PYTHON, "def _force_int(v): return v if isinstance(v, int) else int(v.value)\n\n\n";
+              push @OUTPUT_PYTHON, "from enum import Enum\n\n\ndef _force_int(v): return int(v.value) if isinstance(v, Enum) else v\n\n\n";
               $HAS_PUSHED_FORCE_INT = 1;
             }
             push @OUTPUT_PYTHON, "$py_flag.__bool__ = lambda flag: bool(_force_int(flag))\n";
@@ -1853,9 +1863,6 @@ while ($LINE_IDX < $LINE_COUNT){
            }
         }
     }
-
-    # remove Q_INVOKABLE
-    $LINE =~ s/^(\s*)Q_INVOKABLE /$1/;
 
     do {no warnings 'uninitialized';
         # remove keywords

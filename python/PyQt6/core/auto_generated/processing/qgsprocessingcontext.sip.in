@@ -12,7 +12,6 @@
 
 
 
-
 class QgsProcessingContext
 {
 %Docstring(signature="appended")
@@ -20,8 +19,6 @@ Contains information about the context in which a processing algorithm is execut
 
 Contextual information includes settings such as the associated project, and
 expression context.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -29,7 +26,7 @@ expression context.
 %End
   public:
 
-    enum Flag
+    enum Flag /BaseType=IntEnum/
     {
       // For future API flexibility only and to avoid sip issues, remove when real entries are added to flags.
       Unused,
@@ -206,8 +203,6 @@ algorithm execution.
 {
 %Docstring(signature="appended")
 Details for layers to load into projects.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -368,8 +363,6 @@ Sets a callback function to use when encountering an invalid geometry and
 called using the feature with invalid geometry as a parameter.
 
 .. seealso:: :py:func:`invalidGeometryCallback`
-
-.. versionadded:: 3.0
 %End
 %MethodCode
     Py_BEGIN_ALLOW_THREADS
@@ -393,8 +386,6 @@ features. This function will be
 called using the feature which encountered the transform error as a parameter.
 
 .. seealso:: :py:func:`transformErrorCallback`
-
-.. versionadded:: 3.0
 %End
 %MethodCode
     Py_BEGIN_ALLOW_THREADS
@@ -645,7 +636,7 @@ setting will be ignored.
 .. versionadded:: 3.32
 %End
 
-    QMap<QString, QVariant> exportToMap() const /HoldGIL/;
+    QVariantMap exportToMap() const /HoldGIL/;
 %Docstring
 Exports the context's settings to a variant map.
 
@@ -665,6 +656,17 @@ Returns list of the equivalent qgis_process arguments representing the settings 
 
 .. versionadded:: 3.24
 %End
+
+
+
+
+    QgsProcessingModelResult modelResult() const;
+%Docstring
+Returns the model results, populated when the context is used to run a model algorithm.
+
+.. versionadded:: 3.38
+%End
+
 
   private:
     QgsProcessingContext( const QgsProcessingContext &other );

@@ -62,8 +62,11 @@ QgsFeatureListComboBox::QgsFeatureListComboBox( QWidget *parent )
   setModel( mModel );
 
   connect( mLineEdit, &QgsFilterLineEdit::textEdited, this, &QgsFeatureListComboBox::onCurrentTextChanged );
+  connect( mLineEdit, &QgsFilterLineEdit::cleared, this, &QgsFeatureListComboBox::onFilterLineEditCleared );
 
   connect( mModel, &QgsFeatureFilterModel::currentFeatureChanged, this, &QgsFeatureListComboBox::currentFeatureChanged );
+  // To avoid wrongly signaling a foreign key change, handle model feature found state following feature gathering separately
+  connect( mModel, &QgsFeatureFilterModel::extraValueDoesNotExistChanged, this, &QgsFeatureListComboBox::currentFeatureFoundChanged );
 
   setToolTip( tr( "Just start typing what you are looking for." ) );
 }
@@ -104,6 +107,13 @@ void QgsFeatureListComboBox::onCurrentTextChanged( const QString &text )
   mIsCurrentlyEdited = true;
   mPopupRequested = true;
   mModel->setFilterValue( text );
+}
+
+void QgsFeatureListComboBox::onFilterLineEditCleared()
+{
+  // Reset the combobox when the search is cleared
+  const QString clearedValue = allowNull() ? mLineEdit->nullValue() : mLineEdit->defaultValue();
+  mModel->setFilterValue( clearedValue );
 }
 
 void QgsFeatureListComboBox::onFilterUpdateCompleted()

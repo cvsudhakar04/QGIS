@@ -38,6 +38,8 @@ email                : sherman at mrcc.com
 #include "qgsproviderregistry.h"
 #include "qgsvariantutils.h"
 #include "qgsjsonutils.h"
+#include "qgssetrequestinitiator_p.h"
+
 #include <nlohmann/json.hpp>
 
 #define CPL_SUPRESS_CPLUSPLUS  //#spellok
@@ -1029,7 +1031,7 @@ void QgsOgrProvider::loadMetadata()
                 QgsSqliteUtils::quotedString( QStringLiteral( "http://mrcc.com/qgis.dtd" ) ),
                 QgsSqliteUtils::quotedString( QStringLiteral( "table" ) ) );
 
-        if ( QgsOgrLayerUniquePtr l = mOgrOrigLayer->ExecuteSQL( sql.toLocal8Bit().constData() ) )
+        if ( QgsOgrLayerUniquePtr l = mOgrOrigLayer->ExecuteSQL( sql.toUtf8().constData() ) )
         {
           gdal::ogr_feature_unique_ptr f( l->GetNextFeature() );
           if ( f )
@@ -1411,8 +1413,8 @@ QVariant QgsOgrProvider::defaultValue( int fieldId ) const
     }
   }
 
-  ( void )mAttributeFields.at( fieldId ).convertCompatible( resultVar );
-  return resultVar;
+  const bool compatible = mAttributeFields.at( fieldId ).convertCompatible( resultVar );
+  return compatible && !QgsVariantUtils::isNull( resultVar ) ? resultVar : QVariant();
 }
 
 QString QgsOgrProvider::defaultValueClause( int fieldIndex ) const
@@ -1591,6 +1593,24 @@ static int strictToInt( const QVariant &v, bool *ok )
   return 0;
 }
 
+// Converts a string with values "0", "false", "1", "true" to 0 / 1
+static int stringToBool( const QString &strVal, bool *ok )
+{
+  if ( strVal.compare( QLatin1String( "0" ) ) == 0 || strVal.compare( QLatin1String( "false" ), Qt::CaseInsensitive ) == 0 )
+  {
+    *ok = true;
+    return 0;
+  }
+  else if ( strVal.compare( QLatin1String( "1" ) ) == 0 || strVal.compare( QLatin1String( "true" ), Qt::CaseInsensitive ) == 0 )
+  {
+    *ok = true;
+    return 1;
+  }
+  *ok = false;
+  return 0;
+}
+
+
 bool QgsOgrProvider::addFeaturePrivate( QgsFeature &f, Flags flags, QgsFeatureId incrementalFeatureId )
 {
   bool returnValue = true;
@@ -1686,12 +1706,29 @@ bool QgsOgrProvider::addFeaturePrivate( QgsFeature &f, Flags flags, QgsFeatureId
     }
     else
     {
+      bool errorEmitted = false;
       bool ok = false;
       switch ( type )
       {
         case OFTInteger:
-          OGR_F_SetFieldInteger( feature.get(), ogrAttributeId, strictToInt( attrVal, &ok ) );
+        {
+          if ( OGR_Fld_GetSubType( fldDef ) == OFSTBoolean && qType == QVariant::String )
+          {
+            // compatibility with use case of https://github.com/qgis/QGIS/issues/55517
+            const QString strVal = attrVal.toString();
+            OGR_F_SetFieldInteger( feature.get(), ogrAttributeId, stringToBool( strVal, &ok ) );
+            if ( !ok )
+            {
+              pushError( tr( "wrong value for attribute %1 of feature %2: %3" ).arg( qgisAttributeId ) .arg( f.id() ).arg( strVal ) );
+              errorEmitted = true;
+            }
+          }
+          else
+          {
+            OGR_F_SetFieldInteger( feature.get(), ogrAttributeId, strictToInt( attrVal, &ok ) );
+          }
           break;
+        }
 
         case OFTInteger64:
           OGR_F_SetFieldInteger64( feature.get(), ogrAttributeId, attrVal.toLongLong( &ok ) );
@@ -1734,10 +1771,12 @@ bool QgsOgrProvider::addFeaturePrivate( QgsFeature &f, Flags flags, QgsFeatureId
         }
         case OFTDateTime:
         {
-          const QDateTime dt =  attrVal.toDateTime();
+          QDateTime dt =  attrVal.toDateTime();
           if ( dt.isValid() )
           {
             ok = true;
+            if ( mConvertLocalTimeToUTC && dt.timeSpec() == Qt::LocalTime )
+              dt = dt.toUTC();
             const QDate date = dt.date();
             const QTime time = dt.time();
             OGR_F_SetFieldDateTimeEx( feature.get(), ogrAttributeId,
@@ -1893,7 +1932,10 @@ bool QgsOgrProvider::addFeaturePrivate( QgsFeature &f, Flags flags, QgsFeatureId
 
       if ( !ok )
       {
-        pushError( tr( "wrong data type for attribute %1 of feature %2: %3" ).arg( qgisAttributeId ) .arg( f.id() ).arg( qType ) );
+        if ( !errorEmitted )
+        {
+          pushError( tr( "wrong data type for attribute %1 of feature %2: %3" ).arg( qgisAttributeId ) .arg( f.id() ).arg( attrVal.typeName() ) );
+        }
         returnValue = false;
       }
     }
@@ -2342,6 +2384,8 @@ bool QgsOgrProvider::_setSubsetString( const QString &theSQL, bool updateFeature
   if ( theSQL == mSubsetString && mFeaturesCounted != static_cast< long long >( Qgis::FeatureCountState::Uncounted ) )
     return true;
 
+  const QString oldSubsetString { mSubsetString };
+
   const bool subsetStringHasChanged { theSQL != mSubsetString };
 
   const QString cleanSql = QgsOgrProviderUtils::cleanSubsetString( theSQL );
@@ -2365,6 +2409,12 @@ bool QgsOgrProvider::_setSubsetString( const QString &theSQL, bool updateFeature
       mOgrSqlLayer = QgsOgrProviderUtils::getSqlLayer( mOgrOrigLayer.get(), subsetLayerH, cleanSql );
       Q_ASSERT( mOgrSqlLayer.get() );
       mOgrLayer = mOgrSqlLayer.get();
+
+      const QStringList tableNames {QgsOgrProviderUtils::tableNamesFromSelectSQL( cleanSql ) };
+      if ( ! tableNames.isEmpty() )
+      {
+        mLayerName.clear();
+      }
     }
     else
     {
@@ -2382,6 +2432,18 @@ bool QgsOgrProvider::_setSubsetString( const QString &theSQL, bool updateFeature
       QMutexLocker locker( mutex );
       OGR_L_SetAttributeFilter( layer, nullptr );
     }
+
+    // Try to guess the table name from the old subset string or we might
+    // end with a layer URI without layername
+    if ( !oldSubsetString.isEmpty() )
+    {
+      const QStringList tableNames { QgsOgrProviderUtils::tableNamesFromSelectSQL( oldSubsetString ) };
+      if ( tableNames.size() > 0 )
+      {
+        mLayerName = tableNames.at( 0 );
+      }
+    }
+
   }
   mSubsetString = theSQL;
 
@@ -2634,12 +2696,29 @@ bool QgsOgrProvider::changeAttributeValues( const QgsChangedAttributesMap &attr_
       }
       else
       {
+        bool errorEmitted = false;
         bool ok = false;
         switch ( type )
         {
           case OFTInteger:
-            OGR_F_SetFieldInteger( of.get(), f, strictToInt( *it2, &ok ) );
+          {
+            if ( OGR_Fld_GetSubType( fd ) == OFSTBoolean && qType == QVariant::String )
+            {
+              // compatibility with use case of https://github.com/qgis/QGIS/issues/55517
+              const QString strVal = it2->toString();
+              OGR_F_SetFieldInteger( of.get(), f, stringToBool( strVal, &ok ) );
+              if ( !ok )
+              {
+                pushError( tr( "wrong value for attribute %1 of feature %2: %3" ).arg( it2.key() ) . arg( fid ) .arg( strVal ) );
+                errorEmitted = true;
+              }
+            }
+            else
+            {
+              OGR_F_SetFieldInteger( of.get(), f, strictToInt( *it2, &ok ) );
+            }
             break;
+          }
           case OFTInteger64:
             OGR_F_SetFieldInteger64( of.get(), f, it2->toLongLong( &ok ) );
             break;
@@ -2678,10 +2757,12 @@ bool QgsOgrProvider::changeAttributeValues( const QgsChangedAttributesMap &attr_
           }
           case OFTDateTime:
           {
-            const QDateTime dt = it2->toDateTime();
+            QDateTime dt = it2->toDateTime();
             if ( dt.isValid() )
             {
               ok = true;
+              if ( mConvertLocalTimeToUTC && dt.timeSpec() == Qt::LocalTime )
+                dt = dt.toUTC();
               const QDate date = dt.date();
               const QTime time = dt.time();
               OGR_F_SetFieldDateTimeEx( of.get(), f,
@@ -2835,7 +2916,10 @@ bool QgsOgrProvider::changeAttributeValues( const QgsChangedAttributesMap &attr_
 
         if ( !ok )
         {
-          pushError( tr( "wrong data type for attribute %1 of feature %2: %3" ).arg( it2.key() ) . arg( fid ) .arg( qType ) );
+          if ( !errorEmitted )
+          {
+            pushError( tr( "wrong data type for attribute %1 of feature %2: %3" ).arg( it2.key() ) . arg( fid ) .arg( it2->typeName() ) );
+          }
           returnValue = false;
         }
       }
@@ -2991,7 +3075,8 @@ bool QgsOgrProvider::createSpatialIndexImpl()
 
     QFileInfo fi( mFilePath );     // to get the base name
     //find out, if the .qix file is there
-    return QFileInfo::exists( fi.path().append( '/' ).append( fi.completeBaseName() ).append( ".qix" ) );
+    mShapefileHadSpatialIndex = QFileInfo::exists( fi.path().append( '/' ).append( fi.completeBaseName() ).append( ".qix" ) );
+    return mShapefileHadSpatialIndex;
   }
   else if ( mGDALDriverName == QLatin1String( "GPKG" ) ||
             mGDALDriverName == QLatin1String( "SQLite" ) )
@@ -4121,6 +4206,11 @@ void QgsOgrProvider::open( OpenMode mode )
   {
     mGDALDriverName = mOgrOrigLayer->driverName();
     mShareSameDatasetAmongLayers = QgsOgrProviderUtils::canDriverShareSameDatasetAmongLayers( mGDALDriverName );
+
+    // Should we set it to true unconditionally? as OGR doesn't do any time
+    // zone conversion for local time. For now, only do that for GeoPackage
+    // since it requires UTC.
+    mConvertLocalTimeToUTC = ( mGDALDriverName == QLatin1String( "GPKG" ) );
 
     QgsDebugMsgLevel( "OGR opened using Driver " + mGDALDriverName, 2 );
 

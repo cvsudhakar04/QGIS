@@ -40,7 +40,6 @@ class QgsBox3D;
  * \ingroup core
  * \class QgsLineString
  * \brief Line string geometry type, with support for z-dimension and m-values.
- * \since QGIS 2.10
  */
 class CORE_EXPORT QgsLineString: public QgsCurve
 {
@@ -57,7 +56,6 @@ class CORE_EXPORT QgsLineString: public QgsCurve
      * Construct a linestring from a vector of points.
      * Z and M type will be set based on the type of the first point
      * in the vector.
-     * \since QGIS 3.0
      */
     QgsLineString( const QVector<QgsPoint> &points );
 
@@ -65,7 +63,6 @@ class CORE_EXPORT QgsLineString: public QgsCurve
      * Construct a linestring from list of points.
      * This constructor is more efficient then calling setPoints()
      * or repeatedly calling addVertex()
-     * \since QGIS 3.0
      */
     QgsLineString( const QVector<QgsPointXY> &points );
 #else
@@ -275,7 +272,6 @@ class CORE_EXPORT QgsLineString: public QgsCurve
      * If the sizes of \a x and \a y are non-equal then the resultant linestring
      * will be created using the minimum size of these arrays.
      *
-     * \since QGIS 3.0
      */
     QgsLineString( const QVector<double> &x, const QVector<double> &y,
                    const QVector<double> &z = QVector<double>(),
@@ -630,7 +626,7 @@ class CORE_EXPORT QgsLineString: public QgsCurve
     /**
      * Returns the z-coordinate of the specified node in the line string.
      * \param index index of node, where the first node in the line is 0
-     * \returns z-coordinate of node, or ``nan`` if index is out of bounds or the line
+     * \returns z-coordinate of node, or ``NaN`` if index is out of bounds or the line
      * does not have a z dimension
      * \see setZAt()
      */
@@ -646,7 +642,7 @@ class CORE_EXPORT QgsLineString: public QgsCurve
     /**
      * Returns the z-coordinate of the specified node in the line string.
      *
-     * If the LineString does not have a z-dimension then ``nan`` will be returned.
+     * If the LineString does not have a z-dimension then ``NaN`` will be returned.
      *
      * Indexes can be less than 0, in which case they correspond to positions from the end of the line. E.g. an index of -1
      * corresponds to the last point in the line.
@@ -676,7 +672,7 @@ class CORE_EXPORT QgsLineString: public QgsCurve
     /**
      * Returns the m value of the specified node in the line string.
      * \param index index of node, where the first node in the line is 0
-     * \returns m value of node, or ``nan`` if index is out of bounds or the line
+     * \returns m value of node, or ``NaN`` if index is out of bounds or the line
      * does not have m values
      * \see setMAt()
      */
@@ -692,7 +688,7 @@ class CORE_EXPORT QgsLineString: public QgsCurve
     /**
      * Returns the m-coordinate of the specified node in the line string.
      *
-     * If the LineString does not have a m-dimension then ``nan`` will be returned.
+     * If the LineString does not have a m-dimension then ``NaN`` will be returned.
      *
      * Indexes can be less than 0, in which case they correspond to positions from the end of the line. E.g. an index of -1
      * corresponds to the last point in the line.
@@ -934,7 +930,6 @@ class CORE_EXPORT QgsLineString: public QgsCurve
      * Extends the line geometry by extrapolating out the start or end of the line
      * by a specified distance. Lines are extended using the bearing of the first or last
      * segment in the line.
-     * \since QGIS 3.0
      */
     void extend( double startDistance, double endDistance );
 
@@ -1071,7 +1066,6 @@ class CORE_EXPORT QgsLineString: public QgsCurve
      * Should be used by qgsgeometry_cast<QgsLineString *>( geometry ).
      *
      * \note Not available in Python. Objects will be automatically be converted to the appropriate target type.
-     * \since QGIS 3.0
      */
     inline static const QgsLineString *cast( const QgsAbstractGeometry *geom )
     {
@@ -1193,7 +1187,6 @@ class CORE_EXPORT QgsLineString: public QgsCurve
      */
     QgsBox3D calculateBoundingBox3D() const override;
 
-
     /**
      * Re-write the measure ordinate (or add one, if it isn't already there) interpolating
      * the measure between the supplied \a start and \a end values.
@@ -1201,6 +1194,20 @@ class CORE_EXPORT QgsLineString: public QgsCurve
      * \since QGIS 3.36
      */
     QgsLineString *measuredLine( double start, double end ) const SIP_FACTORY;
+
+    /**
+     * Returns a copy of this line with all missing (NaN) m values interpolated
+     * from m values of surrounding vertices.
+     *
+     * If the line does not contain m values, NULLPTR is returned.
+     *
+     * The \a use3DDistance controls whether 2D or 3D distances between vertices
+     * should be used during interpolation. This option is only considered for lines
+     * with z values.
+     *
+     * \since QGIS 3.38
+     */
+    QgsLineString *interpolateM( bool use3DDistance = true ) const SIP_FACTORY;
 
   protected:
 

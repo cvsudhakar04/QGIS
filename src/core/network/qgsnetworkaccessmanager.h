@@ -38,14 +38,6 @@
 class QgsFeedback;
 class QgsSettingsEntryInteger;
 
-#ifndef SIP_RUN
-#include "qgsconfig.h"
-constexpr int sFilePrefixLength = CMAKE_SOURCE_DIR[sizeof( CMAKE_SOURCE_DIR ) - 1] == '/' ? sizeof( CMAKE_SOURCE_DIR ) + 1 : sizeof( CMAKE_SOURCE_DIR );
-
-#define QgsSetRequestInitiatorClass(request, _class) request.setAttribute( static_cast< QNetworkRequest::Attribute >( QgsNetworkRequestParameters::AttributeInitiatorClass ), _class ); request.setAttribute( static_cast< QNetworkRequest::Attribute >( QgsNetworkRequestParameters::AttributeInitiatorRequestId ), QString(QString( __FILE__ ).mid( sFilePrefixLength ) + ':' + QString::number( __LINE__ ) + " (" + __FUNCTION__ + ")") );
-#define QgsSetRequestInitiatorId(request, str) request.setAttribute( static_cast< QNetworkRequest::Attribute >( QgsNetworkRequestParameters::AttributeInitiatorRequestId ), QString(QString( __FILE__ ).mid( sFilePrefixLength ) + ':' + QString::number( __LINE__ ) + " (" + __FUNCTION__ + "): " + str) );
-#endif
-
 /**
  * \class QgsNetworkRequestParameters
  * \ingroup core
@@ -263,8 +255,6 @@ class CORE_EXPORT QgsNetworkAuthenticationHandler
  * If no proxy factories are there or none returns a proxy for an URL a
  * fallback proxy can be set.  There's also a exclude list that defines URLs
  * that the fallback proxy should not be used for, then no proxy will be used.
- *
- * \since 1.5
  */
 class CORE_EXPORT QgsNetworkAccessManager : public QNetworkAccessManager
 {
@@ -690,11 +680,26 @@ class CORE_EXPORT QgsNetworkAccessManager : public QNetworkAccessManager
      * only to connect to the main thread's signal in order to receive notifications about requests
      * created in any thread.
      *
+     * \see requestCreated( const QgsNetworkRequestParameters & )
      * \see finished( QgsNetworkReplyContent )
      * \see requestTimedOut( QgsNetworkRequestParameters )
      * \since QGIS 3.6
      */
     void requestAboutToBeCreated( QgsNetworkRequestParameters request );
+
+    /**
+     * Emitted when a network request has been created.
+     *
+     * This signal is propagated to the main thread QgsNetworkAccessManager instance, so it is necessary
+     * only to connect to the main thread's signal in order to receive notifications about requests
+     * created in any thread.
+     *
+     * \see requestAboutToBeCreated( QgsNetworkRequestParameters )
+     * \see finished( QgsNetworkReplyContent )
+     * \see requestTimedOut( QgsNetworkRequestParameters )
+     * \since QGIS 3.38
+     */
+    void requestCreated( const QgsNetworkRequestParameters &request );
 
     /**
      * Emitted whenever a pending network reply is finished.

@@ -86,6 +86,8 @@
 #include "qgsinterval.h"
 #include "qgsgpsconnection.h"
 #include "qgssensorregistry.h"
+#include "qgssensorthingsutils.h"
+#include "qgsprofilesourceregistry.h"
 
 #include "gps/qgsgpsconnectionregistry.h"
 #include "processing/qgsprocessingregistry.h"
@@ -305,12 +307,15 @@ void QgsApplication::init( QString profileFolder )
 #endif
     qRegisterMetaType<QPainter::CompositionMode>( "QPainter::CompositionMode" );
     qRegisterMetaType<QgsDateTimeRange>( "QgsDateTimeRange" );
+    qRegisterMetaType<QgsDoubleRange>( "QgsDoubleRange" );
+    qRegisterMetaType<QgsIntRange>( "QgsIntRange" );
     qRegisterMetaType<QList<QgsMapLayer *>>( "QList<QgsMapLayer*>" );
     qRegisterMetaType<QMap<QNetworkRequest::Attribute, QVariant>>( "QMap<QNetworkRequest::Attribute,QVariant>" );
     qRegisterMetaType<QMap<QNetworkRequest::KnownHeaders, QVariant>>( "QMap<QNetworkRequest::KnownHeaders,QVariant>" );
     qRegisterMetaType<QList<QNetworkReply::RawHeaderPair>>( "QList<QNetworkReply::RawHeaderPair>" );
     qRegisterMetaType< QAuthenticator * >( "QAuthenticator*" );
     qRegisterMetaType< QgsGpsInformation >( "QgsGpsInformation" );
+    qRegisterMetaType< QgsSensorThingsExpansionDefinition >( "QgsSensorThingsExpansionDefinition" );
   } );
 
   ( void ) resolvePkgPath();
@@ -2636,6 +2641,11 @@ QgsExternalStorageRegistry *QgsApplication::externalStorageRegistry()
   return members()->mExternalStorageRegistry;
 }
 
+QgsProfileSourceRegistry *QgsApplication::profileSourceRegistry()
+{
+  return members()->mProfileSourceRegistry;
+}
+
 QgsLocalizedDataPathRegistry *QgsApplication::localizedDataPathRegistry()
 {
   return members()->mLocalizedDataPathRegistry;
@@ -2820,6 +2830,11 @@ QgsApplication::ApplicationMembers::ApplicationMembers()
     profiler->end();
   }
   {
+    profiler->start( tr( "Setup profile source registry" ) );
+    mProfileSourceRegistry = new QgsProfileSourceRegistry();
+    profiler->end();
+  }
+  {
     profiler->start( tr( "Setup network content cache" ) );
     mNetworkContentFetcherRegistry = new QgsNetworkContentFetcherRegistry();
     profiler->end();
@@ -2884,6 +2899,7 @@ QgsApplication::ApplicationMembers::~ApplicationMembers()
   delete mRecentStyleHandler;
   delete mSymbolLayerRegistry;
   delete mExternalStorageRegistry;
+  delete mProfileSourceRegistry;
   delete mTaskManager;
   delete mNetworkContentFetcherRegistry;
   delete mClassificationMethodRegistry;

@@ -24,6 +24,7 @@ set(QGIS_GUI_SRCS
   raster/qgsrasterrendererwidget.cpp
   raster/qgssinglebandgrayrendererwidget.cpp
   raster/qgssinglebandpseudocolorrendererwidget.cpp
+  raster/qgsrastersinglecolorrendererwidget.cpp
   raster/qgsrendererrasterpropertieswidget.cpp
   raster/qgsrastertransparencywidget.cpp
   raster/qgshillshaderendererwidget.cpp
@@ -150,6 +151,7 @@ set(QGIS_GUI_SRCS
   codeeditors/qgscodeeditorshell.cpp
   codeeditors/qgscodeeditorsql.cpp
   codeeditors/qgscodeeditorexpression.cpp
+  codeeditors/qgscodeeditorwidget.cpp
 
   devtools/qgsdevtoolwidget.cpp
   devtools/qgsdevtoolwidgetfactory.cpp
@@ -233,6 +235,7 @@ set(QGIS_GUI_SRCS
   editorwidgets/qgsvaluerelationsearchwidgetwrapper.cpp
   editorwidgets/qgsvaluerelationwidgetfactory.cpp
 
+  elevation/qgselevationcontrollerwidget.cpp
   elevation/qgselevationprofilecanvas.cpp
   elevation/qgselevationprofilelayertreeview.cpp
 
@@ -457,6 +460,15 @@ set(QGIS_GUI_SRCS
   providers/ogr/qgsogritemguiprovider.cpp
   providers/ogr/qgsgeopackageprojectstorageguiprovider.cpp
 
+  providers/sensorthings/qgssensorthingsconnectiondialog.cpp
+  providers/sensorthings/qgssensorthingsconnectionpropertiestask.cpp
+  providers/sensorthings/qgssensorthingsconnectionwidget.cpp
+  providers/sensorthings/qgssensorthingsdataitemguiprovider.cpp
+  providers/sensorthings/qgssensorthingsguiprovider.cpp
+  providers/sensorthings/qgssensorthingssourceselect.cpp
+  providers/sensorthings/qgssensorthingssourcewidget.cpp
+  providers/sensorthings/qgssensorthingssubseteditor.cpp
+
   providers/vtpkvectortiles/qgsvtpkvectortileguiprovider.cpp
   providers/vtpkvectortiles/qgsvtpkvectortilesourcewidget.cpp
 
@@ -542,6 +554,7 @@ set(QGIS_GUI_SRCS
   qgsdatasourceselectdialog.cpp
   qgsdbqueryhistoryprovider.cpp
   qgsdbrelationshipwidget.cpp
+  qgsdecoratedscrollbar.cpp
   qgsdetaileditemdata.cpp
   qgsdetaileditemdelegate.cpp
   qgsdetaileditemwidget.cpp
@@ -674,6 +687,7 @@ set(QGIS_GUI_SRCS
   qgsoptionsdialoghighlightwidget.cpp
   qgsoptionsdialoghighlightwidgetsimpl.cpp
   qgsorderbydialog.cpp
+  qgsoverlaywidgetlayout.cpp
   qgsowssourceselect.cpp
   qgsowssourcewidget.cpp
   qgspanelwidget.cpp
@@ -812,6 +826,7 @@ set(QGIS_GUI_HDRS
   qgsdatasourceselectdialog.h
   qgsdbqueryhistoryprovider.h
   qgsdbrelationshipwidget.h
+  qgsdecoratedscrollbar.h
   qgsnewdatabasetablenamewidget.h
   qgsdetaileditemdata.h
   qgsdetaileditemdelegate.h
@@ -947,6 +962,7 @@ set(QGIS_GUI_HDRS
   qgsoptionsdialoghighlightwidgetsimpl.h
   qgsoptionswidgetfactory.h
   qgsorderbydialog.h
+  qgsoverlaywidgetlayout.h
   qgsowssourceselect.h
   qgsowssourcewidget.h
   qgspanelwidget.h
@@ -1099,6 +1115,7 @@ set(QGIS_GUI_HDRS
   codeeditors/qgscodeeditorr.h
   codeeditors/qgscodeeditorshell.h
   codeeditors/qgscodeeditorsql.h
+  codeeditors/qgscodeeditorwidget.h
 
   devtools/qgsdevtoolwidget.h
   devtools/qgsdevtoolwidgetfactory.h
@@ -1186,6 +1203,7 @@ set(QGIS_GUI_HDRS
   effects/qgspainteffectpropertieswidget.h
   effects/qgspainteffectwidget.h
 
+  elevation/qgselevationcontrollerwidget.h
   elevation/qgselevationprofilecanvas.h
   elevation/qgselevationprofilelayertreeview.h
 
@@ -1411,6 +1429,15 @@ set(QGIS_GUI_HDRS
   providers/ogr/qgsogritemguiprovider.h
   providers/ogr/qgsogrsourceselect.h
 
+  providers/sensorthings/qgssensorthingsconnectiondialog.h
+  providers/sensorthings/qgssensorthingsconnectionpropertiestask.h
+  providers/sensorthings/qgssensorthingsconnectionwidget.h
+  providers/sensorthings/qgssensorthingsdataitemguiprovider.h
+  providers/sensorthings/qgssensorthingsguiprovider.h
+  providers/sensorthings/qgssensorthingssourceselect.h
+  providers/sensorthings/qgssensorthingssourcewidget.h
+  providers/sensorthings/qgssensorthingssubseteditor.h
+
   providers/vtpkvectortiles/qgsvtpkvectortileguiprovider.h
   providers/vtpkvectortiles/qgsvtpkvectortilesourcewidget.h
 
@@ -1434,6 +1461,7 @@ set(QGIS_GUI_HDRS
   raster/qgsrendererrasterpropertieswidget.h
   raster/qgssinglebandgrayrendererwidget.h
   raster/qgssinglebandpseudocolorrendererwidget.h
+  raster/qgsrastersinglecolorrendererwidget.h
   raster/qgsrasterlayerproperties.h
   raster/qgsrasterlayertemporalpropertieswidget.h
   raster/qgsresamplingutils.h
@@ -1648,6 +1676,7 @@ target_include_directories(qgis_gui PUBLIC
   ${CMAKE_SOURCE_DIR}/src/gui/providers/gdal
   ${CMAKE_SOURCE_DIR}/src/gui/providers/mbtilesvectortiles
   ${CMAKE_SOURCE_DIR}/src/gui/providers/ogr
+  ${CMAKE_SOURCE_DIR}/src/gui/providers/sensorthings
   ${CMAKE_SOURCE_DIR}/src/gui/providers/vtpkvectortiles
   ${CMAKE_SOURCE_DIR}/src/gui/pointcloud
   ${CMAKE_SOURCE_DIR}/src/gui/raster
@@ -1775,6 +1804,8 @@ if(ENABLE_MODELTEST)
   target_link_libraries(qgis_gui ${QT_VERSION_BASE}::Test)
 endif()
 
+# We use private headers from core that need this
+target_compile_definitions(qgis_gui PRIVATE "CMAKE_SOURCE_DIR=\"${CMAKE_SOURCE_DIR}\"")
 target_compile_definitions(qgis_gui PRIVATE "-DQT_NO_FOREACH")
 
 if(WIN32)

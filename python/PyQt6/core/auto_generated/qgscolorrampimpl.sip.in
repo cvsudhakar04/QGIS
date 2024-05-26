@@ -13,8 +13,6 @@ class QgsGradientStop
 {
 %Docstring(signature="appended")
 Represents a color stop within a :py:class:`QgsGradientColorRamp` color ramp.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -99,8 +97,6 @@ class QgsGradientColorRamp : QgsColorRamp
 %Docstring(signature="appended")
 Gradient color ramp, which smoothly interpolates between two colors and also
 supports optional extra color stops.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -122,7 +118,7 @@ Constructor for QgsGradientColorRamp
 :param stops: optional list of additional color stops
 %End
 
-    static QgsColorRamp *create( const QMap<QString, QVariant> &properties = QMap<QString, QVariant>() ) /Factory/;
+    static QgsColorRamp *create( const QVariantMap &properties = QVariantMap() ) /Factory/;
 %Docstring
 Creates a new :py:class:`QgsColorRamp` from a map of properties
 %End
@@ -146,7 +142,7 @@ Returns the string identifier for QgsGradientColorRamp.
 
     virtual QgsGradientColorRamp *clone() const /Factory/;
 
-    virtual QMap<QString, QVariant> properties() const;
+    virtual QVariantMap properties() const;
 
 
     QColor color1() const;
@@ -261,8 +257,6 @@ Copy color ramp stops to a QGradient
 :param gradient: gradient to copy stops into
 :param opacity: opacity multiplier. Opacity of colors will be multiplied
                 by this factor before adding to the gradient.
-
-.. versionadded:: 2.1
 %End
 
     QColor::Spec colorSpec() const;
@@ -327,8 +321,6 @@ class QgsLimitedRandomColorRamp : QgsColorRamp
 {
 %Docstring(signature="appended")
 Constrained random color ramp, which returns random colors based on preset parameters.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -352,7 +344,7 @@ Constructor for QgsLimitedRandomColorRamp
 :param valMax: maximum color value
 %End
 
-    static QgsColorRamp *create( const QMap<QString, QVariant> &properties = QMap<QString, QVariant>() ) /Factory/;
+    static QgsColorRamp *create( const QVariantMap &properties = QVariantMap() ) /Factory/;
 %Docstring
 Returns a new QgsLimitedRandomColorRamp color ramp created using the properties encoded in a string
 map.
@@ -378,7 +370,7 @@ Returns the string identifier for QgsLimitedRandomColorRamp.
 
     virtual QgsLimitedRandomColorRamp *clone() const /Factory/;
 
-    virtual QMap<QString, QVariant> properties() const;
+    virtual QVariantMap properties() const;
 
     virtual int count() const;
 
@@ -388,8 +380,6 @@ Returns the string identifier for QgsLimitedRandomColorRamp.
                                        int valMax = DEFAULT_RANDOM_VAL_MAX, int valMin = DEFAULT_RANDOM_VAL_MIN );
 %Docstring
 Gets a list of random colors
-
-.. versionadded:: 2.4
 %End
 
     void updateColors();
@@ -495,8 +485,6 @@ class QgsRandomColorRamp: QgsColorRamp
 %Docstring(signature="appended")
 Totally random color ramp. Returns colors generated at random, but constrained
 to some hardcoded saturation and value ranges to prevent ugly color generation.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -525,8 +513,6 @@ this method pregenerates a set of visually distinct colors which are returned
 by subsequent calls to :py:func:`~QgsRandomColorRamp.color`.
 
 :param colorCount: number of unique colors
-
-.. versionadded:: 2.5
 %End
 
     static QString typeString();
@@ -542,7 +528,7 @@ Returns the string identifier for QgsRandomColorRamp.
     virtual QgsRandomColorRamp *clone() const /Factory/;
 
 
-    virtual QMap<QString, QVariant> properties() const;
+    virtual QVariantMap properties() const;
 
 
   protected:
@@ -555,8 +541,6 @@ class QgsPresetSchemeColorRamp : QgsColorRamp, QgsColorScheme
 {
 %Docstring(signature="appended")
 A scheme based color ramp consisting of a list of predefined colors.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -578,7 +562,7 @@ Constructor for :py:class:`QgsPresetColorRamp`.
 :param colors: list of named colors in ramp
 %End
 
-    static QgsColorRamp *create( const QMap<QString, QVariant> &properties = QMap<QString, QVariant>() ) /Factory/;
+    static QgsColorRamp *create( const QVariantMap &properties = QVariantMap() ) /Factory/;
 %Docstring
 Returns a new QgsPresetSchemeColorRamp color ramp created using the properties encoded in a string
 map.
@@ -622,7 +606,7 @@ Returns the string identifier for QgsPresetSchemeColorRamp.
 
     virtual QgsPresetSchemeColorRamp *clone() const /Factory/;
 
-    virtual QMap<QString, QVariant> properties() const;
+    virtual QVariantMap properties() const;
 
     virtual int count() const;
 
@@ -640,8 +624,6 @@ class QgsColorBrewerColorRamp : QgsColorRamp
 {
 %Docstring(signature="appended")
 Color ramp utilising "Color Brewer" preset color schemes.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -660,7 +642,7 @@ Constructor for QgsColorBrewerColorRamp
 :param inverted: invert ramp ordering
 %End
 
-    static QgsColorRamp *create( const QMap<QString, QVariant> &properties = QMap<QString, QVariant>() ) /Factory/;
+    static QgsColorRamp *create( const QVariantMap &properties = QVariantMap() ) /Factory/;
 %Docstring
 Returns a new QgsColorBrewerColorRamp color ramp created using the properties encoded in a string
 map.
@@ -687,7 +669,7 @@ Returns the string identifier for QgsColorBrewerColorRamp.
 
     virtual QgsColorBrewerColorRamp *clone() const /Factory/;
 
-    virtual QMap<QString, QVariant> properties() const;
+    virtual QVariantMap properties() const;
 
     virtual int count() const;
 
@@ -788,7 +770,7 @@ Constructor for QgsCptCityColorRamp
 :param doLoadFile: load cpt-city ramp from file
 %End
 
-    static QgsColorRamp *create( const QMap<QString, QVariant> &properties = QMap<QString, QVariant>() ) /Factory/;
+    static QgsColorRamp *create( const QVariantMap &properties = QVariantMap() ) /Factory/;
 %Docstring
 Creates the symbol layer
 %End
@@ -811,7 +793,7 @@ Returns the string identifier for QgsCptCityColorRamp.
     void copy( const QgsCptCityColorRamp *other );
     QgsGradientColorRamp *cloneGradientRamp() const /Factory/;
 
-    virtual QMap<QString, QVariant> properties() const;
+    virtual QVariantMap properties() const;
 
 
     QString schemeName() const;

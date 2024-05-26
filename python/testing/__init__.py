@@ -34,12 +34,14 @@ from typing import Optional, Tuple, Union
 from warnings import warn
 
 from qgis.PyQt.QtCore import (
+    Qt,
     QVariant,
     QDateTime,
     QDate,
     QDir,
     QUrl,
-    QSize
+    QSize,
+    QCoreApplication
 )
 from qgis.PyQt.QtGui import (
     QImage,
@@ -303,6 +305,19 @@ class QgisTestCase(unittest.TestCase):
 
         return result
 
+    @staticmethod
+    def get_test_data_path(file_path: str) -> Path:
+        """
+        Returns the full path to a file contained within the test data
+        directory.
+        """
+        from utilities import unitTestDataPath
+
+        return (
+            Path(unitTestDataPath()) /
+            (file_path[1:] if file_path.startswith('/') else file_path)
+        )
+
     def assertLayersEqual(self, layer_expected, layer_result, **kwargs):
         """
         :param layer_expected: The first layer to compare
@@ -448,7 +463,7 @@ class QgisTestCase(unittest.TestCase):
 
             return True
 
-        def sort_by_pk_or_fid(f):
+        def get_pk_or_fid(f):
             if 'pk' in kwargs and kwargs['pk'] is not None:
                 key = kwargs['pk']
                 if isinstance(key, list) or isinstance(key, tuple):
@@ -457,6 +472,14 @@ class QgisTestCase(unittest.TestCase):
                     return f[kwargs['pk']]
             else:
                 return f.id()
+
+        def sort_by_pk_or_fid(f):
+            pk = get_pk_or_fid(f)
+            # we want NULL values sorted first, and don't want to try to
+            # directly compare NULL against non-NULL values
+            if isinstance(pk, list):
+                pk = [(v == NULL, v) for v in pk]
+            return (pk == NULL, pk)
 
         expected_features = sorted(layer_expected.getFeatures(request), key=sort_by_pk_or_fid)
         result_features = sorted(layer_result.getFeatures(request), key=sort_by_pk_or_fid)
@@ -875,6 +898,8 @@ def start_app(cleanup=True):
             argvb = list(map(os.fsencode, sys.argv))
         except AttributeError:
             argvb = sys.argv
+
+        QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts, True)
 
         # Note: QGIS_PREFIX_PATH is evaluated in QgsApplication -
         # no need to mess with it here.

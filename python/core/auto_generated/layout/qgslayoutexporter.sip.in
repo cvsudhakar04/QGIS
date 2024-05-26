@@ -14,8 +14,6 @@ class QgsLayoutExporter
 {
 %Docstring(signature="appended")
 Handles rendering and exports of layouts to various formats.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -352,6 +350,13 @@ to the error description.
 %Docstring
 Returns the file name corresponding to the last error encountered during
 an export.
+%End
+
+    QString errorMessage() const;
+%Docstring
+Returns a string describing the last error encountered during an export.
+
+.. versionadded:: 3.38
 %End
 
     QMap< QString, QgsLabelingResults * > labelingResults();

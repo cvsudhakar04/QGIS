@@ -22,7 +22,7 @@ set(CMAKE_LINK_DEPENDS_NO_SHARED ON)
 #############################################################
 # Project and version
 set(CPACK_PACKAGE_VERSION_MAJOR "3")
-set(CPACK_PACKAGE_VERSION_MINOR "35")
+set(CPACK_PACKAGE_VERSION_MINOR "37")
 set(CPACK_PACKAGE_VERSION_PATCH "0")
 set(COMPLETE_VERSION ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH})
 set(RELEASE_NAME "Master")
@@ -375,9 +375,6 @@ if(WITH_CORE)
 
   find_package(Protobuf CONFIG)
   find_package(Protobuf REQUIRED)
-  if(Protobuf_VERSION GREATER_EQUAL 4.23)
-    set(Protobuf_LITE_LIBRARY protobuf::libprotobuf-lite)
-  endif()
 
   message(STATUS "Found Protobuf: ${Protobuf_LIBRARIES}")
   if (NOT Protobuf_PROTOC_EXECUTABLE)
@@ -492,6 +489,14 @@ if(WITH_CORE)
       set (HAVE_QTGAMEPAD TRUE)
   endif()
 
+  set (WITH_PDF4QT FALSE CACHE BOOL "Determines whether the embedded PDF4Qt library should be build for PDF and HTML to QPainter conversion")
+  if (WITH_PDF4QT)
+    set(HAVE_PDF4QT TRUE)  # used in qgisconfig.h
+    message(STATUS "PDF4Qt enabled")
+  else()
+    message(STATUS "PDF4Qt disabled")
+  endif()
+
   find_package(${QT_VERSION_BASE} COMPONENTS Core Gui Widgets Network Xml Svg Concurrent Test Sql Positioning REQUIRED)
   if (BUILD_WITH_QT6)
     find_package(${QT_VERSION_BASE} COMPONENTS Core5Compat REQUIRED)
@@ -539,7 +544,7 @@ if(WITH_CORE)
   # get the Qt plugins directory
   get_target_property(QMAKE_EXECUTABLE ${QT_VERSION_BASE}::qmake LOCATION)
 
-  EXEC_PROGRAM(${QMAKE_EXECUTABLE} ARGS "-query QT_INSTALL_PLUGINS" RETURN_VALUE return_code OUTPUT_VARIABLE DEFAULT_QT_PLUGINS_DIR )
+  execute_process(COMMAND ${QMAKE_EXECUTABLE} -query QT_INSTALL_PLUGINS RESULT_VARIABLE return_code OUTPUT_STRIP_TRAILING_WHITESPACE OUTPUT_VARIABLE DEFAULT_QT_PLUGINS_DIR )
   set (QT_PLUGINS_DIR ${DEFAULT_QT_PLUGINS_DIR} CACHE STRING "Path to installation directory for Qt Plugins. Defaults to Qt native plugin directory")
 
   if (BUILD_WITH_QT6)
@@ -568,7 +573,11 @@ if(WITH_CORE)
   endif()
 
   # Password helper
-  find_package(QtKeychain REQUIRED)
+  if(BUILD_WITH_QT6)
+    find_package(Qt6Keychain CONFIG REQUIRED)
+  else()
+    find_package(Qt5Keychain CONFIG REQUIRED)
+  endif()
   # Master password hash and authentication encryption
   find_package(QCA REQUIRED)
   # Check for runtime dependency of qca-ossl plugin

@@ -37,7 +37,6 @@
 #include "qgsrasterpyramid.h"
 #include "qgspointxy.h"
 #include "qgssettings.h"
-#include "qgsogrutils.h"
 #include "qgsruntimeprofiler.h"
 #include "qgsprovidersublayerdetails.h"
 #include "qgsproviderutils.h"
@@ -167,6 +166,8 @@ QgsGdalProvider::QgsGdalProvider( const QString &uri, const ProviderOptions &opt
   {
     return;
   }
+
+  invalidateNetworkCache();
 
   mGdalDataset = nullptr;
   if ( dataset )
@@ -480,6 +481,7 @@ void QgsGdalProvider::closeDataset()
 void QgsGdalProvider::reloadProviderData()
 {
   QMutexLocker locker( mpMutex );
+  invalidateNetworkCache();
   closeDataset();
 
   mHasInit = false;
@@ -1780,6 +1782,11 @@ QString QgsGdalProvider::description() const
   return PROVIDER_DESCRIPTION;
 }
 
+Qgis::DataProviderFlags QgsGdalProvider::flags() const
+{
+  return Qgis::DataProviderFlag::FastExtent2D;
+}
+
 QgsRasterDataProvider::ProviderCapabilities QgsGdalProvider::providerCapabilities() const
 {
   return ProviderCapability::ProviderHintBenefitsFromResampling |
@@ -1830,12 +1837,35 @@ QList<QgsProviderSublayerDetails> QgsGdalProvider::sublayerDetails( GDALDatasetH
         }
         else
         {
+
+          // Check if the layer has TIFFTAG_DOCUMENTNAME associated with it. If so, use that name.
+          GDALDatasetH datasetHandle = GDALOpen( name, GA_ReadOnly );
+
+          if ( datasetHandle )
+          {
+
+            QString tagTIFFDocumentName = GDALGetMetadataItem( datasetHandle, "TIFFTAG_DOCUMENTNAME", nullptr );
+            if ( ! tagTIFFDocumentName.isEmpty() )
+            {
+              layerName = tagTIFFDocumentName;
+            }
+
+            QString tagTIFFImageDescription = GDALGetMetadataItem( datasetHandle, "TIFFTAG_IMAGEDESCRIPTION", nullptr );
+            if ( ! tagTIFFImageDescription.isEmpty() )
+            {
+              layerDesc = tagTIFFImageDescription;
+            }
+
+            GDALClose( datasetHandle );
+          }
+
           // try to extract layer name from a path like 'NETCDF:"/baseUri":cell_node'
           sepIdx = layerName.indexOf( datasetPath + "\":" );
           if ( sepIdx >= 0 )
           {
             layerName = layerName.mid( layerName.indexOf( datasetPath + "\":" ) + datasetPath.length() + 2 );
           }
+
         }
 
         QgsProviderSublayerDetails details;
@@ -2395,7 +2425,7 @@ QList<QgsRasterPyramid> QgsGdalProvider::buildPyramidList()
       }
     }
     mPyramidList.append( myRasterPyramid );
-    //sqare the divisor each step
+    //square the divisor each step
     myDivisor = ( myDivisor * 2 );
   }
 
@@ -2424,7 +2454,7 @@ QList<QgsRasterPyramid> QgsGdalProvider::buildPyramidList( const QList<int> &lis
     while ( ( myWidth / myDivisor > 32 ) && ( ( myHeight / myDivisor ) > 32 ) )
     {
       overviewList.append( myDivisor );
-      //sqare the divisor each step
+      //square the divisor each step
       myDivisor = ( myDivisor * 2 );
     }
   }
@@ -2746,7 +2776,7 @@ void buildSupportedRasterFileFilterAndExtensions( QString &fileFiltersString, QS
   // Grind through all the drivers and their respective metadata.
   // We'll add a file filter for those drivers that have a file
   // extension defined for them; the others, well, even though
-  // theoreticaly we can open those files because there exists a
+  // theoretically we can open those files because there exists a
   // driver for them, the user will have to use the "All Files" to
   // open datasets with no explicitly defined file name extension.
 
@@ -3943,7 +3973,7 @@ QgsGdalProvider *QgsGdalProviderMetadata::createRasterDataProvider(
   return new QgsGdalProvider( uri, providerOptions, true, dataset.release() );
 }
 
-bool QgsGdalProvider::write( void *data, int band, int width, int height, int xOffset, int yOffset )
+bool QgsGdalProvider::write( const void *data, int band, int width, int height, int xOffset, int yOffset )
 {
   QMutexLocker locker( mpMutex );
   if ( !initIfNeeded() )
@@ -3964,7 +3994,7 @@ bool QgsGdalProvider::write( void *data, int band, int width, int height, int xO
     gdalDataType = GDT_Float64;
 #endif
 
-  return gdalRasterIO( rasterBand, GF_Write, xOffset, yOffset, width, height, data, width, height, gdalDataType, 0, 0 ) == CE_None;
+  return gdalRasterIO( rasterBand, GF_Write, xOffset, yOffset, width, height, const_cast< void * >( data ), width, height, gdalDataType, 0, 0 ) == CE_None;
 }
 
 bool QgsGdalProvider::setNoDataValue( int bandNo, double noDataValue )
@@ -4242,6 +4272,21 @@ Qgis::ProviderStyleStorageCapabilities QgsGdalProvider::styleStorageCapabilities
     storageCapabilities |= Qgis::ProviderStyleStorageCapability::DeleteFromDatabase;
   }
   return storageCapabilities;
+}
+
+void QgsGdalProvider::invalidateNetworkCache()
+{
+  const QString uri( dataSourceUri() );
+
+  if ( uri.startsWith( QLatin1String( "/vsicurl/" ) )  ||
+       uri.startsWith( QLatin1String( "/vsis3/" ) ) ||
+       uri.startsWith( QLatin1String( "/vsigs/" ) ) ||
+       uri.startsWith( QLatin1String( "/vsiaz/" ) ) ||
+       uri.startsWith( QLatin1String( "/vsiadls/" ) ) )
+  {
+    QgsDebugMsgLevel( QString( "Invalidating cache for %1" ).arg( uri ), 3 );
+    VSICurlPartialClearCache( uri.toUtf8().constData() );
+  }
 }
 
 // pyramids resampling
@@ -4592,8 +4637,8 @@ int QgsGdalProviderMetadata::listStyles( const QString &uri, QStringList &ids, Q
     errCause = QObject::tr( "Cannot open %1." ).arg( uri );
     return -1;
   }
-  QVariantMap uriParts = QgsGdalProviderBase::decodeGdalUri( uri );
-  QString layerName = uriParts["layerName"].toString();
+
+  QString layerName = getLayerNameForStyle( uri, ds );
   return QgsOgrUtils::listStyles( ds.get(), layerName, "", ids, names, descriptions, errCause );
 }
 
@@ -4606,8 +4651,8 @@ bool QgsGdalProviderMetadata::styleExists( const QString &uri, const QString &st
     errCause = QObject::tr( "Cannot open %1." ).arg( uri );
     return false;
   }
-  QVariantMap uriParts = QgsGdalProviderBase::decodeGdalUri( uri );
-  QString layerName = uriParts["layerName"] .toString();
+
+  QString layerName = getLayerNameForStyle( uri, ds );
   return QgsOgrUtils::styleExists( ds.get(), layerName, "", styleId, errCause );
 }
 
@@ -4626,7 +4671,7 @@ QString QgsGdalProviderMetadata::getStyleById( const QString &uri, const QString
 bool QgsGdalProviderMetadata::deleteStyleById( const QString &uri, const QString &styleId, QString &errCause )
 {
   gdal::dataset_unique_ptr ds;
-  ds.reset( QgsGdalProviderBase::gdalOpen( uri, GDAL_OF_READONLY ) );
+  ds.reset( QgsGdalProviderBase::gdalOpen( uri, GDAL_OF_UPDATE ) );
   if ( !ds )
   {
     errCause = QObject::tr( "Cannot open %1." ).arg( uri );
@@ -4646,8 +4691,8 @@ bool QgsGdalProviderMetadata::saveStyle( const QString &uri, const QString &qmlS
     errCause = QObject::tr( "Cannot open %1." ).arg( uri );
     return false;
   }
-  QVariantMap uriParts = QgsGdalProviderBase::decodeGdalUri( uri );
-  QString layerName = uriParts["layerName"].toString();
+
+  QString layerName = getLayerNameForStyle( uri, ds );
   return QgsOgrUtils::saveStyle( ds.get(), layerName, "", qmlStyle, sldStyle, styleName, styleDescription, uiFileContent, useAsDefault, errCause );
 }
 
@@ -4666,9 +4711,27 @@ QString QgsGdalProviderMetadata::loadStoredStyle( const QString &uri, QString &s
     errCause = QObject::tr( "Cannot open %1." ).arg( uri );
     return QString();
   }
+
+  QString layerName = getLayerNameForStyle( uri, ds );
+  return QgsOgrUtils::loadStoredStyle( ds.get(), layerName, "", styleName, errCause );
+}
+
+QString QgsGdalProviderMetadata::getLayerNameForStyle( const QString &uri, gdal::dataset_unique_ptr &ds )
+{
   QVariantMap uriParts = QgsGdalProviderBase::decodeGdalUri( uri );
   QString layerName = uriParts["layerName"].toString();
-  return QgsOgrUtils::loadStoredStyle( ds.get(), layerName, "", styleName, errCause );
+  if ( layerName.isEmpty() )
+  {
+    GDALDriverH driver = GDALGetDatasetDriver( ds.get() );
+    if ( driver )
+    {
+      if ( GDALGetDriverShortName( driver ) == QLatin1String( "GPKG" ) )
+      {
+        layerName = GDALGetMetadataItem( ds.get(), "IDENTIFIER", "" );
+      }
+    }
+  }
+  return layerName;
 }
 
 QgsGdalProviderMetadata::QgsGdalProviderMetadata():

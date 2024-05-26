@@ -11,8 +11,6 @@ class QgsRangeFieldFormatter : QgsFieldFormatter
 {
 %Docstring(signature="appended")
 Field formatter for a range (double) field with precision and locale.
-
-.. versionadded:: 3.0
 %End
 
 %TypeHeaderCode
@@ -28,7 +26,7 @@ Default constructor of field formatter for a range (double)field.
     virtual QString id() const;
 
 
-    virtual QString representValue( QgsVectorLayer *layer, int fieldIndex, const QMap<QString, QVariant> &config, const QVariant &cache, const QVariant &value ) const;
+    virtual QString representValue( QgsVectorLayer *layer, int fieldIndex, const QVariantMap &config, const QVariant &cache, const QVariant &value ) const;
 
 
 };

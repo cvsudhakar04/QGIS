@@ -155,7 +155,7 @@ namespace QgsWms
     }
     image.reset( createImage( size ) );
 
-    // configure painter and addapt to the context
+    // configure painter and adapt to the context
     QPainter painter( image.get() );
 
     context.setPainter( &painter );
@@ -937,7 +937,7 @@ namespace QgsWms
       QgsLayoutFrame *htmlFrame = html->frame( 0 );
       bool ok = false;
       const QString htmlId = htmlFrame->id();
-      const QString url = mWmsParameters.layoutParameter( htmlId, ok );
+      const QString htmlValue = mWmsParameters.layoutParameter( htmlId, ok );
 
       if ( !ok )
       {
@@ -947,15 +947,22 @@ namespace QgsWms
 
       //remove exported Htmls referenced in the request
       //but with empty string
-      if ( url.isEmpty() )
+      if ( htmlValue.isEmpty() )
       {
         c->removeMultiFrame( html );
         delete html;
         continue;
       }
 
-      QUrl newUrl( url );
-      html->setUrl( newUrl );
+      if ( html->contentMode() == QgsLayoutItemHtml::Url )
+      {
+        QUrl newUrl( htmlValue );
+        html->setUrl( newUrl );
+      }
+      else if ( html->contentMode() == QgsLayoutItemHtml::ManualHtml )
+      {
+        html->setHtml( htmlValue );
+      }
       html->update();
     }
 
@@ -1175,6 +1182,11 @@ namespace QgsWms
     if ( mWmsParameters.noMText() )
       flags.setFlag( QgsDxfExport::Flag::FlagNoMText );
 
+    if ( mWmsParameters.exportLinesWithZeroWidth() )
+    {
+      flags.setFlag( QgsDxfExport::Flag::FlagHairlineWidthExport );
+    }
+
     dxf->setFlags( flags );
 
     return dxf;
@@ -1316,7 +1328,7 @@ namespace QgsWms
     else if ( infoFormat == QgsWmsParameters::Format::HTML )
       ba = convertFeatureInfoToHtml( result );
     else if ( infoFormat == QgsWmsParameters::Format::JSON )
-      ba = convertFeatureInfoToJson( layers, result );
+      ba = convertFeatureInfoToJson( layers, result, mapSettings.destinationCrs() );
     else
       ba = result.toByteArray();
 
@@ -1649,7 +1661,7 @@ namespace QgsWms
             }
 
             layerElement.setAttribute( QStringLiteral( "name" ), layerName );
-            const QString layerTitle = layer->title();
+            const QString layerTitle = layer->serverProperties()->title();
             if ( !layerTitle.isEmpty() )
             {
               layerElement.setAttribute( QStringLiteral( "title" ), layerTitle );
@@ -1725,7 +1737,7 @@ namespace QgsWms
               const QList<QgsMapLayer *> constLayers { mContext.layerGroups()[ql] };
               for ( const QgsMapLayer *ml : constLayers )
               {
-                if ( ( ! ml->shortName().isEmpty() &&  ml->shortName() == queryLayer ) || ( ml->name() == queryLayer ) )
+                if ( ( ! ml->serverProperties()->shortName().isEmpty() &&  ml->serverProperties()->shortName() == queryLayer ) || ( ml->name() == queryLayer ) )
                 {
                   param.mValue = ql;
                 }
@@ -2670,7 +2682,7 @@ namespace QgsWms
 
               featureInfoString.append( featureInfoAttributeString );
             }
-            else if ( name == QStringLiteral( "maptip" ) )
+            else if ( name == QLatin1String( "maptip" ) )
             {
               featureInfoString.append( QStringLiteral( R"HTML(
       %1)HTML" ).arg( value ) );
@@ -2726,7 +2738,7 @@ namespace QgsWms
 
               featureInfoString.append( featureInfoAttributeString );
             }
-            else if ( name == QStringLiteral( "maptip" ) )
+            else if ( name == QLatin1String( "maptip" ) )
             {
               featureInfoString.append( QStringLiteral( R"HTML(
       %1)HTML" ).arg( value ) );
@@ -2813,7 +2825,7 @@ namespace QgsWms
     return featureInfoString.toUtf8();
   }
 
-  QByteArray QgsRenderer::convertFeatureInfoToJson( const QList<QgsMapLayer *> &layers, const QDomDocument &doc ) const
+  QByteArray QgsRenderer::convertFeatureInfoToJson( const QList<QgsMapLayer *> &layers, const QDomDocument &doc, const QgsCoordinateReferenceSystem &destCRS ) const
   {
     json json
     {
@@ -2914,6 +2926,8 @@ namespace QgsWms
         exporter.setAttributes( attributes );
         exporter.setIncludeGeometry( withGeometry );
         exporter.setTransformGeometries( false );
+
+        QgsJsonUtils::addCrsInfo( json, destCRS );
 
         for ( const auto &feature : std::as_const( features ) )
         {

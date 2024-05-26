@@ -20,8 +20,6 @@ Stores metadata about a paint effect class.
    It's necessary to implement the :py:func:`~createPaintEffect` function.
    In C++ you can use the :py:class:`QgsPaintEffectMetadata` convenience class to
    simplify creation of the metadata.
-
-.. versionadded:: 2.9
 %End
 
 %TypeHeaderCode
@@ -57,7 +55,7 @@ Returns the user visible string representing the paint effect class
 .. seealso:: :py:func:`name`
 %End
 
-    virtual QgsPaintEffect *createPaintEffect( const QMap<QString, QVariant> &map ) = 0 /Factory/;
+    virtual QgsPaintEffect *createPaintEffect( const QVariantMap &map ) = 0 /Factory/;
 %Docstring
 Create a paint effect of this class given an encoded map of properties.
 
@@ -88,8 +86,6 @@ Registry of available paint effects.
 
 :py:class:`QgsPaintEffectRegistry` is not usually directly created, but rather accessed through
 :py:func:`QgsApplication.paintEffectRegistry()`.
-
-.. versionadded:: 2.9
 %End
 
 %TypeHeaderCode
@@ -119,7 +115,7 @@ Registers a new effect type.
 :return: ``True`` if add was successful.
 %End
 
-    QgsPaintEffect *createEffect( const QString &name, const QMap<QString, QVariant> &properties = QMap<QString, QVariant>() ) const /Factory/;
+    QgsPaintEffect *createEffect( const QString &name, const QVariantMap &properties = QVariantMap() ) const /Factory/;
 %Docstring
 Creates a new paint effect given the effect name and properties map.
 
@@ -168,8 +164,6 @@ Tests whether a paint effect matches the default effects stack.
 :return: ``True`` if effect is default stack
 
 .. seealso:: :py:func:`defaultStack`
-
-.. versionadded:: 2.12
 %End
 
   private:
