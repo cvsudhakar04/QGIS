@@ -49,6 +49,7 @@
 #include "qgsmarkersymbol.h"
 #include "qgsfillsymbol.h"
 #include "qgsheatmaprenderer.h"
+#include "qgsmeshlayer.h"
 
 static void _setStandardTestFont( QgsLegendSettings &settings, const QString &style = QStringLiteral( "Roman" ) )
 {
