@@ -20,11 +20,13 @@
 #include "qgis_sip.h"
 #include <QObject>
 
+#include "qgsexpressioncontext.h"
 #include "qgsfeature.h"
 #include "qgsgeometry.h"
 
 class QgsFeatureRequest;
 class QgsVectorLayer;
+class QgsVectorLayerToolsContext;
 class QgsProject;
 
 /**
@@ -56,10 +58,36 @@ class CORE_EXPORT QgsVectorLayerTools : public QObject
      * \param parentWidget    The widget calling this function to be passed to the used dialog
      * \param showModal       If the used dialog should be modal or not
      * \param hideParent      If the parent widget should be hidden, when the used dialog is opened
-     * \returns                TRUE in case of success, FALSE if the operation failed/was aborted
+     * \returns               TRUE in case of success, FALSE if the operation failed/was aborted
      *
+     * \note addFeature or addFeatureV2 must be overwritten when implementing a class inheriting from QgsVectorLayerTools
      */
-    virtual bool addFeature( QgsVectorLayer *layer, const QgsAttributeMap &defaultValues = QgsAttributeMap(), const QgsGeometry &defaultGeometry = QgsGeometry(), QgsFeature *feature SIP_OUT = nullptr, QWidget *parentWidget = nullptr, bool showModal = true, bool hideParent = false ) const = 0;
+    virtual bool addFeature( QgsVectorLayer *layer, const QgsAttributeMap &defaultValues = QgsAttributeMap(), const QgsGeometry &defaultGeometry = QgsGeometry(), QgsFeature *feature SIP_OUT = nullptr, QWidget *parentWidget = nullptr, bool showModal = true, bool hideParent = false ) const
+    {
+      return addFeatureV2( layer, defaultValues, defaultGeometry, feature, parentWidget, showModal, hideParent, nullptr );
+    }
+
+    /**
+     * This method should/will be called, whenever a new feature will be added to the layer
+     *
+     * \param layer           The layer to which the feature should be added
+     * \param defaultValues   Default values for the feature to add
+     * \param defaultGeometry A default geometry to add to the feature
+     * \param feature         Updated feature after adding will be written back to this
+     * \param parentWidget    The widget calling this function to be passed to the used dialog
+     * \param showModal       If the used dialog should be modal or not
+     * \param hideParent      If the parent widget should be hidden, when the used dialog is opened
+     * \param context         A context object to be used for e.g. to calculate feature expression-based values (since QGIS 3.38)
+     * \returns               TRUE in case of success, FALSE if the operation failed/was aborted
+     *
+     * \note addFeature or addFeatureV2 must be overwritten when implementing a class inheriting from QgsVectorLayerTools
+     * \since QGIS 3.38
+     */
+    virtual bool addFeatureV2( QgsVectorLayer *layer, const QgsAttributeMap &defaultValues = QgsAttributeMap(), const QgsGeometry &defaultGeometry = QgsGeometry(), QgsFeature *feature SIP_OUT = nullptr, QWidget *parentWidget = nullptr, bool showModal = true, bool hideParent = false, QgsVectorLayerToolsContext *context = nullptr ) const
+    {
+      Q_UNUSED( context )
+      return addFeature( layer, defaultValues, defaultGeometry, feature, parentWidget, showModal, hideParent );
+    }
 
     // TODO QGIS 4: remove const qualifier
 

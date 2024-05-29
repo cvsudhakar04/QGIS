@@ -19,6 +19,7 @@
 
 #include "qgsfeatureiterator.h"
 #include "qgsexpression.h"
+#include "qgsexpressioncontextutils.h"
 #include "qgsfeature.h"
 #include "qgsfeatureselectiondlg.h"
 #include "qgsrelation.h"
@@ -286,8 +287,11 @@ QgsFeatureIds QgsAbstractRelationEditorWidget::addFeature( const QgsGeometry &ge
     for ( const QgsRelation::FieldPair &fieldPair : constFieldPairs )
       keyAttrs.insert( fields.indexFromName( fieldPair.referencingField() ), mFeatureList.first().attribute( fieldPair.referencedField() ) );
 
+    std::unique_ptr<QgsVectorLayerToolsContext> context = std::make_unique<QgsVectorLayerToolsContext>();
+    std::unique_ptr<QgsExpressionContextScope> scope( QgsExpressionContextUtils::parentFormScope( mFeatureList.first(), mEditorContext.attributeFormModeString() ) );
+    context->setAdditionalExpressionContextScope( scope.get() );
     QgsFeature linkFeature;
-    if ( !vlTools->addFeature( mRelation.referencingLayer(), keyAttrs, geometry, &linkFeature, this, true, true ) )
+    if ( !vlTools->addFeatureV2( mRelation.referencingLayer(), keyAttrs, geometry, &linkFeature, this, true, true, context.get() ) )
       return QgsFeatureIds();
 
     addedFeatureIds.insert( linkFeature.id() );

@@ -1,0 +1,83 @@
+/************************************************************************
+ * This file has been generated automatically from                      *
+ *                                                                      *
+ * src/core/vector/qgsvectorlayertoolscontext.h                         *
+ *                                                                      *
+ * Do not edit manually ! Edit header and run scripts/sipify.pl again   *
+ ************************************************************************/
+
+
+
+
+class QgsVectorLayerToolsContext
+{
+%Docstring(signature="appended")
+Contains settings which reflect the context in which vector layer tool operations should
+consider.
+
+.. versionadded:: 3.38
+%End
+
+%TypeHeaderCode
+#include "qgsvectorlayertoolscontext.h"
+%End
+  public:
+
+    QgsVectorLayerToolsContext();
+%Docstring
+Constructor for QgsVectorLayerToolsContext.
+%End
+
+    QgsVectorLayerToolsContext( const QgsVectorLayerToolsContext &other );
+%Docstring
+Copy constructor.
+
+:param other: source QgsVectorLayerToolsContext
+%End
+
+
+    void setExpressionContext( QgsExpressionContext *context );
+%Docstring
+Sets the optional expression context used by the vector layer tools.
+
+:param context: expression context pointer. Ownership is not transferred.
+
+.. seealso:: :py:func:`expressionContext`
+
+.. seealso:: :py:func:`setAdditionalExpressionContextScope`
+%End
+
+    QgsExpressionContext *expressionContext() const;
+%Docstring
+Returns the optional expression context used by the vector layer tools.
+
+.. seealso:: :py:func:`setExpressionContext`
+
+.. seealso:: :py:func:`additionalExpressionContextScope`
+%End
+
+    void setAdditionalExpressionContextScope( QgsExpressionContextScope *scope );
+%Docstring
+Sets an additional expression context scope to be made available when calculating expressions.
+
+:param scope: additional scope
+
+.. seealso:: :py:func:`additionalExpressionContextScope`
+%End
+
+    QgsExpressionContextScope *additionalExpressionContextScope();
+%Docstring
+Returns an additional expression context scope to be made available when calculating expressions.
+
+.. seealso:: :py:func:`setAdditionalExpressionContextScope`
+%End
+
+};
+
+/************************************************************************
+ * This file has been generated automatically from                      *
+ *                                                                      *
+ * src/core/vector/qgsvectorlayertoolscontext.h                         *
+ *                                                                      *
+ * Do not edit manually ! Edit header and run scripts/sipify.pl again   *
+ ************************************************************************/
