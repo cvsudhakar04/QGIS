@@ -1328,16 +1328,19 @@ void QgsDualView::setFeatureSelectionManager( QgsIFeatureSelectionManager *featu
 
 void QgsDualView::setAttributeTableConfig( const QgsAttributeTableConfig &config )
 {
-  mConfig = config;
-  mConfig.update( mLayer->fields() );
-  mLayer->setAttributeTableConfig( mConfig );
-  mFilterModel->setAttributeTableConfig( mConfig );
-  mTableView->setAttributeTableConfig( mConfig );
-  const QgsAttributeList attributes { requiredAttributes( mLayer ) };
-  QgsFeatureRequest request { mMasterModel->request() };
-  request.setSubsetOfAttributes( attributes );
-  mMasterModel->setRequest( request );
-  mLayerCache->setCacheSubsetOfAttributes( attributes );
+  if ( config != mConfig )
+  {
+    mConfig = config;
+    mConfig.update( mLayer->fields() );
+    mLayer->setAttributeTableConfig( mConfig );
+    mFilterModel->setAttributeTableConfig( mConfig );
+    mTableView->setAttributeTableConfig( mConfig );
+    const QgsAttributeList attributes { requiredAttributes( mLayer ) };
+    QgsFeatureRequest request { mMasterModel->request() };
+    request.setSubsetOfAttributes( attributes );
+    mMasterModel->setRequest( request );
+    mLayerCache->setCacheSubsetOfAttributes( attributes );
+  }
 }
 
 void QgsDualView::setSortExpression( const QString &sortExpression, Qt::SortOrder sortOrder )
