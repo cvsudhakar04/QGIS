@@ -409,6 +409,10 @@ class GUI_EXPORT QgsDualView : public QStackedWidget, private Ui::QgsDualViewBas
      */
     void initAttributeForm( const QgsFeature &feature );
 
+
+    //! Set or reset the model request, taking care of the sort cache
+    void setModelRequest( const QgsFeatureRequest &request );
+
     /**
      * Initializes widgets which depend on the attributes of this layer
      */

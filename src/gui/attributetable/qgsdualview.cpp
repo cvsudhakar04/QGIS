@@ -211,6 +211,17 @@ void QgsDualView::initAttributeForm( const QgsFeature &feature )
   connect( mMasterModel, &QgsAttributeTableModel::modelChanged, mAttributeForm, &QgsAttributeForm::refreshFeature );
 }
 
+void QgsDualView::setModelRequest( const QgsFeatureRequest &request )
+{
+  // TODO: when API is ready check if request has changed and only reset if needed
+  mMasterModel->setRequest( request );
+  // Sort again because the request has changed and the cache was cleared
+  if ( mFilterModel && !mConfig.sortExpression().isEmpty() )
+  {
+    mFilterModel->sort( mConfig.sortExpression(), mConfig.sortOrder() );
+  }
+}
+
 void QgsDualView::columnBoxInit()
 {
   // load fields
@@ -418,7 +429,8 @@ void QgsDualView::setFilterMode( QgsAttributeTableFilterModel::FilterMode filter
     //disconnect the connections of the current (old) filtermode before reload
     mFilterModel->disconnectFilterModeConnections();
 
-    mMasterModel->setRequest( request );
+    setModelRequest( request );
+
     whileBlocking( mLayerCache )->setCacheGeometry( needsGeometry );
     mMasterModel->loadLayer();
   }
@@ -455,7 +467,7 @@ void QgsDualView::initModels( QgsMapCanvas *mapCanvas, const QgsFeatureRequest &
   delete mMasterModel;
 
   mMasterModel = new QgsAttributeTableModel( mLayerCache, this );
-  mMasterModel->setRequest( request );
+  setModelRequest( request );
   mMasterModel->setEditorContext( mEditorContext );
   mMasterModel->setExtraColumns( 1 ); // Add one extra column which we can "abuse" as an action column
 
@@ -1257,7 +1269,7 @@ void QgsDualView::updateSelectedFeatures()
     return; // already requested all features
 
   r.setFilterFids( masterModel()->layer()->selectedFeatureIds() );
-  mMasterModel->setRequest( r );
+  setModelRequest( r );
   mMasterModel->loadLayer();
   emit filterChanged();
 }
@@ -1269,7 +1281,7 @@ void QgsDualView::updateEditedAddedFeatures()
     return; // already requested all features
 
   r.setFilterFids( masterModel()->layer()->editBuffer() ? masterModel()->layer()->editBuffer()->allAddedOrEditedFeatures() : QgsFeatureIds() );
-  mMasterModel->setRequest( r );
+  setModelRequest( r );
   mMasterModel->loadLayer();
   emit filterChanged();
 }
@@ -1281,7 +1293,7 @@ void QgsDualView::extentChanged()
   {
     const QgsRectangle rect = mFilterModel->mapCanvas()->mapSettings().mapToLayerCoordinates( mLayer, mFilterModel->mapCanvas()->extent() );
     r.setFilterRect( rect );
-    mMasterModel->setRequest( r );
+    setModelRequest( r );
     mMasterModel->loadLayer();
   }
   emit filterChanged();
@@ -1312,7 +1324,7 @@ void QgsDualView::filterFeatures( const QgsExpression &filterExpression, const Q
 
 void QgsDualView::setRequest( const QgsFeatureRequest &request )
 {
-  mMasterModel->setRequest( request );
+  setModelRequest( request );
 }
 
 void QgsDualView::setFeatureSelectionManager( QgsIFeatureSelectionManager *featureSelectionManager )
@@ -1328,16 +1340,25 @@ void QgsDualView::setFeatureSelectionManager( QgsIFeatureSelectionManager *featu
 
 void QgsDualView::setAttributeTableConfig( const QgsAttributeTableConfig &config )
 {
-  mConfig = config;
-  mConfig.update( mLayer->fields() );
-  mLayer->setAttributeTableConfig( mConfig );
-  mFilterModel->setAttributeTableConfig( mConfig );
-  mTableView->setAttributeTableConfig( mConfig );
-  const QgsAttributeList attributes { requiredAttributes( mLayer ) };
-  QgsFeatureRequest request { mMasterModel->request() };
-  request.setSubsetOfAttributes( attributes );
-  mMasterModel->setRequest( request );
-  mLayerCache->setCacheSubsetOfAttributes( attributes );
+  if ( config != mConfig )
+  {
+    mConfig = config;
+    mConfig.update( mLayer->fields() );
+    mLayer->setAttributeTableConfig( mConfig );
+    mFilterModel->setAttributeTableConfig( mConfig );
+    mTableView->setAttributeTableConfig( mConfig );
+    const QgsAttributeList attributes { requiredAttributes( mLayer ) };
+    if ( attributes != mMasterModel->request().subsetOfAttributes() )
+    {
+      QgsFeatureRequest request { mMasterModel->request() };
+      request.setSubsetOfAttributes( attributes );
+      setModelRequest( request );
+    }
+    if ( attributes != mLayerCache->cacheSubsetOfAttributes() )
+    {
+      mLayerCache->setCacheSubsetOfAttributes( attributes );
+    }
+  }
 }
 
 void QgsDualView::setSortExpression( const QString &sortExpression, Qt::SortOrder sortOrder )
