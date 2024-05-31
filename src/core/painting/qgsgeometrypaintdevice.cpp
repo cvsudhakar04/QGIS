@@ -445,7 +445,7 @@ void addSubpathGeometries( QgsGeometryCollection &collection, const QPainterPath
 
   // ensure holes are holes, not overlapping polygons
   QgsGeos geosCollection( &tempMultiPolygon );
-  std::unique_ptr< QgsAbstractGeometry > g = geosCollection.makeValid( Qgis::MakeValidMethod::Linework );
+  std::unique_ptr< QgsAbstractGeometry > g = geosCollection.makeValid( Qgis::MakeValidMethod::Structure );
   if ( !g )
     return;
 
